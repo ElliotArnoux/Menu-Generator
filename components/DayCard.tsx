@@ -49,7 +49,7 @@ const DayCard: React.FC<DayCardProps> = ({
       <div className={`flex-1 flex flex-col ${isPrint || 'lg:overflow-hidden'}`}>
         {day.meals.length > 0 ? (
             day.meals.map((meal, mealIndex) => (
-            <div key={`${meal.name}-${mealIndex}`} className={`flex-1 border-t ${isPrint ? 'border-gray-200' : 'border-dark-border'} first:border-t-0 min-h-0`}>
+            <div key={`${meal.name}-${mealIndex}`} className={`border-t ${isPrint ? 'border-gray-200' : 'border-dark-border'} first:border-t-0 min-h-0 ${isPrint || 'lg:flex-1'}`}>
                 <MealSlot
                     meal={meal}
                     dayIndex={dayIndex}

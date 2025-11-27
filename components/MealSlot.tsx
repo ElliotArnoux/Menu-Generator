@@ -71,7 +71,11 @@ const MealSlot: React.FC<MealSlotProps> = ({
       
       <div className="flex-1 flex flex-col gap-1 min-h-0">
         {meal.subMeals.map((subMeal, subMealIndex) => (
-            <div key={subMeal.id} className="flex-1 basis-0 min-h-0">
+            <div 
+                key={subMeal.id} 
+                // Mobile: basis-auto (stack naturally). Desktop: basis-0 (force split).
+                className={`min-h-[50px] lg:min-h-0 ${isPrint ? 'flex-1 basis-0' : 'basis-auto lg:flex-1 lg:basis-0'}`}
+            >
                 <SubMealSlot 
                     subMeal={subMeal}
                     dayIndex={dayIndex}

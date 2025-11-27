@@ -43,7 +43,11 @@ function App() {
       return translation || key; // Fallback to key if not found
   }, [language]);
 
-  const [dishCategories, setDishCategories] = useState<string[]>([]);
+  // Lazy initialize categories from LocalStorage
+  const [dishCategories, setDishCategories] = useState<string[]>(() => {
+      const saved = localStorage.getItem('dish_categories');
+      return saved ? JSON.parse(saved) : [];
+  });
   
   // Calculate display suggestions for submeals (combining translated defaults + history)
   // We don't save the translated default in history, we generate it on fly
@@ -71,7 +75,13 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGroceryListOpen, setIsGroceryListOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ dayIndex: number; mealIndex: number; subMealId: string } | null>(null);
-  const [recipeBook, setRecipeBook] = useState<Dish[]>(initialRecipes);
+  
+  // Lazy initialize recipes
+  const [recipeBook, setRecipeBook] = useState<Dish[]>(() => {
+      const saved = localStorage.getItem('saved_recipes');
+      return saved ? JSON.parse(saved) : initialRecipes;
+  });
+
   const [currentView, setCurrentView] = useState<'planner' | 'recipes' | 'rules'>('planner');
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -85,15 +95,41 @@ function App() {
   
   const [weekNotes, setWeekNotes] = useState('');
   const [appliedRuleNames, setAppliedRuleNames] = useState<string[]>([]);
-  const [savedWeeks, setSavedWeeks] = useState<SavedWeek[]>([]);
+  
+  // Lazy initialize saved weeks
+  const [savedWeeks, setSavedWeeks] = useState<SavedWeek[]>(() => {
+      const saved = localStorage.getItem('saved_weeks');
+      if (saved) return JSON.parse(saved);
+      
+      // Default template if no saved weeks
+      const emptyMenu = initializeWeekMenu();
+      return [{
+          id: 'default-new-menu',
+          name: 'New Menu', 
+          menu: emptyMenu,
+          notes: '',
+          ruleNames: []
+      }];
+  });
+
   const [isSavedWeeksModalOpen, setIsSavedWeeksModalOpen] = useState(false);
 
-  // Rules State
-  const [savedRules, setSavedRules] = useState<SavedRule[]>([]);
-  const [ruleCategories, setRuleCategories] = useState<RuleCategory[]>([]);
+  // Lazy initialize Rules & Categories
+  const [savedRules, setSavedRules] = useState<SavedRule[]>(() => {
+      const saved = localStorage.getItem('saved_rules_v2');
+      return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [ruleCategories, setRuleCategories] = useState<RuleCategory[]>(() => {
+      const saved = localStorage.getItem('rule_categories');
+      return saved ? JSON.parse(saved) : [];
+  });
 
-  // Ingredient Stores State (Ingredient Name -> Store Name)
-  const [ingredientStoreMap, setIngredientStoreMap] = useState<Record<string, string>>({});
+  // Lazy initialize Ingredient Stores
+  const [ingredientStoreMap, setIngredientStoreMap] = useState<Record<string, string>>(() => {
+      const saved = localStorage.getItem('ingredient_stores');
+      return saved ? JSON.parse(saved) : {};
+  });
 
   // Grocery List Checked Items State (lifted from GroceryListView)
   const [checkedGroceryItems, setCheckedGroceryItems] = useState<Record<string, boolean>>({});
@@ -115,40 +151,6 @@ function App() {
     return missingKeys.map(k => t(k));
   }, [addingMealTo, weekMenu, t]);
 
-  // Load Rules, Categories, DishCategories, IngredientStores, SavedWeeks on mount
-  useEffect(() => {
-    const loadedRules = localStorage.getItem('saved_rules_v2');
-    const loadedCategories = localStorage.getItem('rule_categories');
-    const loadedDishCategories = localStorage.getItem('dish_categories');
-    const loadedIngredientStores = localStorage.getItem('ingredient_stores');
-    const loadedSavedWeeks = localStorage.getItem('saved_weeks');
-    
-    if (loadedRules) setSavedRules(JSON.parse(loadedRules));
-    if (loadedCategories) setRuleCategories(JSON.parse(loadedCategories));
-    
-    // For Dish Categories, we merge saved ones with our new Defaults logic
-    // If user has saved custom categories, we load them.
-    if (loadedDishCategories) {
-        setDishCategories(JSON.parse(loadedDishCategories));
-    }
-
-    if (loadedIngredientStores) setIngredientStoreMap(JSON.parse(loadedIngredientStores));
-    
-    if (loadedSavedWeeks) {
-        setSavedWeeks(JSON.parse(loadedSavedWeeks));
-    } else {
-        // First time load: Create a default "New" menu template
-        const emptyMenu = initializeWeekMenu();
-        const newTemplate: SavedWeek = {
-            id: 'default-new-menu',
-            name: 'New Menu', 
-            menu: emptyMenu,
-            notes: '',
-            ruleNames: []
-        };
-        setSavedWeeks([newTemplate]);
-    }
-  }, []);
 
   // Save changes
   useEffect(() => { localStorage.setItem('saved_rules_v2', JSON.stringify(savedRules)); }, [savedRules]);
@@ -156,6 +158,7 @@ function App() {
   useEffect(() => { localStorage.setItem('dish_categories', JSON.stringify(dishCategories)); }, [dishCategories]);
   useEffect(() => { localStorage.setItem('ingredient_stores', JSON.stringify(ingredientStoreMap)); }, [ingredientStoreMap]);
   useEffect(() => { localStorage.setItem('saved_weeks', JSON.stringify(savedWeeks)); }, [savedWeeks]);
+  useEffect(() => { localStorage.setItem('saved_recipes', JSON.stringify(recipeBook)); }, [recipeBook]);
 
   // Dish Category Management
   const handleAddDishCategory = (name: string) => {

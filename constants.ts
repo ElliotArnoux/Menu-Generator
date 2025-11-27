@@ -188,6 +188,12 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'saved_weeks': { es: 'Semanas Guardadas', en: 'Saved Weeks', fr: 'Semaines Enregistrées' },
     'week_name': { es: 'Nombre de la Semana', en: 'Week Name', fr: 'Nom de la Semaine' },
     'week_name_placeholder': { es: 'Ej: Menú Verano, Semana 42...', en: 'Ex: Summer Menu, Week 42...', fr: 'Ex: Menu Été, Semaine 42...' },
+
+    // SubMealNameModal
+    'add_section_title': { es: 'Añadir Nueva Sección', en: 'Add New Section', fr: 'Ajouter Nouvelle Section' },
+    'section_name_prompt': { es: 'Dale un nombre a esta sección (ej: Primer Plato, Para los niños, Postre...).', en: 'Name this section (e.g., First Course, Kids, Dessert...).', fr: 'Nommez cette section (ex: Entrée, Enfants, Dessert...).' },
+    'section_name_placeholder': { es: 'Nombre de la sección', en: 'Section Name', fr: 'Nom de la section' },
+    'suggestions': { es: 'Sugerencias', en: 'Suggestions', fr: 'Suggestions' },
 };
 
 export const getCategoryColor = (str: string) => {

@@ -696,6 +696,7 @@ function App() {
                 }
             }}
             history={currentSectionSuggestions}
+            t={t}
           />
 
           <MealNameModal

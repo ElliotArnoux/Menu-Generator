@@ -34,10 +34,10 @@ const WeekView: React.FC<WeekViewProps> = ({
       {/* 
         Fixed Layout Strategy for A4 Landscape coherence on Desktop:
         - Grid: 5 columns.
-        - Rows: Strict fixed heights for print/desktop to fit A4
+        - Rows: grid-rows-2 makes both rows equal height (50% 50%)
         - Mobile: Auto height, flow layout
       */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 ${isPrint ? 'h-full grid-rows-[55%_42%]' : 'lg:h-full lg:grid-rows-[58%_40%] auto-rows-auto'}`}>
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 ${isPrint ? 'h-full grid-rows-[55%_42%]' : 'lg:h-full lg:grid-rows-2 auto-rows-auto'}`}>
           {/* Monday to Friday (Indices 0-4) */}
           {weekMenu.slice(0, 5).map((day, dayIndex) => (
             <div key={day.name} className={`col-span-1 ${isPrint ? 'h-full overflow-hidden' : 'lg:h-full'}`}>

@@ -30,7 +30,7 @@ const WeekView: React.FC<WeekViewProps> = ({
     weekNotes, setWeekNotes, appliedRuleNames, t, isPrint = false
 }) => {
   return (
-    <div id="week-view-container" className={`w-full flex flex-col gap-4 ${isPrint ? 'week-view-print' : 'lg:h-full lg:min-h-[850px] min-h-[calc(100vh-100px)]'}`}>
+    <div id="week-view-container" className={`w-full flex flex-col gap-4 ${isPrint ? 'week-view-print' : 'lg:h-[calc(100vh-5rem)] min-h-[calc(100vh-100px)]'}`}>
       {/* 
         Fixed Layout Strategy for A4 Landscape coherence on Desktop:
         - Grid: 5 columns.

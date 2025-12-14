@@ -49,7 +49,13 @@ const responseSchema = {
   },
 };
 
-export const getMealSuggestions = async (category: string, mealName: string, language: AppLanguage, availableCategories: string[] = []): Promise<Dish[]> => {
+export const getMealSuggestions = async (
+    category: string, 
+    mealName: string, 
+    language: AppLanguage, 
+    availableCategories: string[] = [],
+    customContext: string = ""
+): Promise<Dish[]> => {
   try {
     const langNames = { es: 'Spanish', en: 'English', fr: 'French' };
     const langName = langNames[language];
@@ -60,6 +66,9 @@ export const getMealSuggestions = async (category: string, mealName: string, lan
     Prioritize Iberian style cuisine (Spanish/Portuguese). 
     Include a list of ingredients for each dish with estimated numeric quantities for 4 people.
     Assign appropriate categories to each dish. ${catList}
+    
+    ADDITIONAL USER INSTRUCTIONS (Priority): ${customContext}
+
     IMPORTANT: The output JSON must be in ${langName}.`;
 
     const response = await ai.models.generateContent({

@@ -655,6 +655,7 @@ function App() {
             mealIdentifier={getMealIdentifier()}
             recipeBook={recipeBook}
             categories={currentDishCategories}
+            savedRules={savedRules}
             t={t}
             language={language}
           />

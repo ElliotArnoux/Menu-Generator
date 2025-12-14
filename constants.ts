@@ -86,6 +86,14 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'import_week': { es: 'Importar Semana', en: 'Import Week', fr: 'Importer Semaine' },
     'export_week': { es: 'Exportar Semana', en: 'Export Week', fr: 'Exporter Semaine' },
 
+    // Dish Selector
+    'free_text': { es: 'Texto Libre', en: 'Free Text', fr: 'Texte Libre' },
+    'free_text_placeholder': { es: 'Ej: Sobras, Comer fuera...', en: 'Ex: Leftovers, Dining out...', fr: 'Ex: Restes, Restaurant...' },
+    'add_free_text': { es: 'Añadir Texto', en: 'Add Text', fr: 'Ajouter Texte' },
+    'ai_custom_prompt': { es: 'Instrucción personalizada (opcional)', en: 'Custom prompt (optional)', fr: 'Instruction personnalisée (optionnel)' },
+    'ai_custom_placeholder': { es: 'Ej: Algo con pollo...', en: 'Ex: Something with chicken...', fr: 'Ex: Quelque chose avec du poulet...' },
+    'select_rules_optional': { es: 'Aplicar reglas (opcional)', en: 'Apply rules (optional)', fr: 'Appliquer des règles (optionnel)' },
+
     // Default Categories (Legacy & New Keys)
     'Meat': { es: 'Carne', en: 'Meat', fr: 'Viande' },
     'Fish': { es: 'Pescado', en: 'Fish', fr: 'Poisson' },

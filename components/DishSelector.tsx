@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Dish, AppLanguage } from '../types';
+import { Dish, AppLanguage, SavedRule } from '../types';
 import { getMealSuggestions } from '../services/geminiService';
 import DishCard from './DishCard';
-import { XIcon, RefreshCwIcon } from './icons';
+import { XIcon, RefreshCwIcon, Wand2Icon } from './icons';
 
 interface DishSelectorProps {
   isOpen: boolean;
@@ -13,19 +13,28 @@ interface DishSelectorProps {
   mealIdentifier: { mealName: string; dayName: string } | null;
   recipeBook: Dish[];
   categories: string[];
+  savedRules: SavedRule[];
   t: (key: string) => string;
   language: AppLanguage;
 }
 
 const DishSelector: React.FC<DishSelectorProps> = ({ 
     isOpen, onClose, onSelectDish, onSaveRecipe, mealIdentifier, recipeBook, 
-    categories, t, language
+    categories, savedRules, t, language
 }) => {
-  const [activeTab, setActiveTab] = useState<'ai' | 'myRecipes'>('ai');
+  const [activeTab, setActiveTab] = useState<'ai' | 'myRecipes' | 'freeText'>('ai');
   const [selectedCategory, setSelectedCategory] = useState<string>('Any');
   const [suggestions, setSuggestions] = useState<Dish[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // AI Customization
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [selectedRuleIds, setSelectedRuleIds] = useState<Set<string>>(new Set());
+  const [showAiSettings, setShowAiSettings] = useState(true);
+
+  // Free Text
+  const [freeText, setFreeText] = useState('');
 
   const recipeNamesInBook = useMemo(() => 
     new Set(recipeBook.map(r => r.name.toLowerCase())), 
@@ -35,21 +44,34 @@ const DishSelector: React.FC<DishSelectorProps> = ({
   const fetchSuggestions = useCallback(async () => {
     if (!mealIdentifier) return;
     setIsLoading(true);
-    const fetchedSuggestions = await getMealSuggestions(selectedCategory, mealIdentifier.mealName, language, categories);
+    
+    let context = customPrompt;
+    if (selectedRuleIds.size > 0) {
+        const rulesText = savedRules
+            .filter(r => selectedRuleIds.has(r.id))
+            .map(r => r.text)
+            .join(' ');
+        context = `${context}. ${rulesText}`;
+    }
+
+    const fetchedSuggestions = await getMealSuggestions(selectedCategory, mealIdentifier.mealName, language, categories, context);
     setSuggestions(fetchedSuggestions);
     setIsLoading(false);
-  }, [selectedCategory, mealIdentifier, language, categories]);
+  }, [selectedCategory, mealIdentifier, language, categories, customPrompt, selectedRuleIds, savedRules]);
 
+  // Only auto-fetch on first open, not on every render
   useEffect(() => {
-    if (isOpen && mealIdentifier && activeTab === 'ai') {
+    if (isOpen && mealIdentifier && activeTab === 'ai' && suggestions.length === 0) {
       fetchSuggestions();
     }
-  }, [isOpen, fetchSuggestions, mealIdentifier, activeTab]);
+  }, [isOpen, activeTab]); // Dependencies simplified to avoid infinite loop with fetchSuggestions
   
   useEffect(() => {
     if (isOpen) {
         setActiveTab(recipeBook.length > 0 ? 'myRecipes' : 'ai');
         setSearchTerm('');
+        setFreeText('');
+        setSuggestions([]); // Clear previous suggestions
     }
   }, [isOpen, recipeBook.length]);
 
@@ -65,6 +87,27 @@ const DishSelector: React.FC<DishSelectorProps> = ({
       return matchesSearch && matchesCategory;
     });
   }, [recipeBook, searchTerm, selectedCategory]);
+
+  const toggleRule = (id: string) => {
+    const newSet = new Set(selectedRuleIds);
+    if (newSet.has(id)) {
+        newSet.delete(id);
+    } else {
+        newSet.add(id);
+    }
+    setSelectedRuleIds(newSet);
+  };
+
+  const handleFreeTextSubmit = () => {
+      if (!freeText.trim()) return;
+      onSelectDish({
+          id: Date.now().toString(),
+          name: freeText,
+          description: '', // Empty description for free text
+          ingredients: []
+      });
+      onClose();
+  };
 
   if (!isOpen || !mealIdentifier) return null;
 
@@ -88,41 +131,82 @@ const DishSelector: React.FC<DishSelectorProps> = ({
 
         <div className="p-4 flex-shrink-0 border-b border-dark-border">
             <div className="flex bg-dark-card p-1 rounded-lg">
-                <button onClick={() => setActiveTab('myRecipes')} className={`w-1/2 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'myRecipes' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('my_recipes')}</button>
-                <button onClick={() => setActiveTab('ai')} className={`w-1/2 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'ai' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>AI Suggestions</button>
+                <button onClick={() => setActiveTab('myRecipes')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'myRecipes' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('my_recipes')}</button>
+                <button onClick={() => setActiveTab('ai')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'ai' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>AI</button>
+                <button onClick={() => setActiveTab('freeText')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'freeText' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('free_text')}</button>
             </div>
         </div>
 
-        {/* Categories are available in both views now */}
-        <div className="px-4 py-2 border-b border-dark-border">
-            <p className="text-sm text-dark-text-secondary mb-2">{t('categories')}:</p>
-            <div className="flex flex-wrap gap-2">
-                <button
-                    onClick={() => setSelectedCategory('Any')}
-                    className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${selectedCategory === 'Any' ? 'bg-brand-primary text-white' : 'bg-dark-card text-dark-text-secondary hover:bg-gray-700'}`}
-                >
-                    {t('Any')}
-                </button>
-                {categories.map(category => (
-                <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${selectedCategory === category ? 'bg-brand-primary text-white' : 'bg-dark-card text-dark-text-secondary hover:bg-gray-700'}`}
-                >
-                    {t(category)}
-                </button>
-                ))}
+        {activeTab !== 'freeText' && (
+            <div className="px-4 py-2 border-b border-dark-border">
+                <p className="text-sm text-dark-text-secondary mb-2">{t('categories')}:</p>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        onClick={() => setSelectedCategory('Any')}
+                        className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${selectedCategory === 'Any' ? 'bg-brand-primary text-white' : 'bg-dark-card text-dark-text-secondary hover:bg-gray-700'}`}
+                    >
+                        {t('Any')}
+                    </button>
+                    {categories.map(category => (
+                    <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${selectedCategory === category ? 'bg-brand-primary text-white' : 'bg-dark-card text-dark-text-secondary hover:bg-gray-700'}`}
+                    >
+                        {t(category)}
+                    </button>
+                    ))}
+                </div>
             </div>
-        </div>
+        )}
 
         <div className="overflow-y-auto flex-grow">
           {activeTab === 'ai' && (
             <div className="p-4">
+               {/* AI Customization Section */}
+              <div className="mb-4 bg-dark-card/50 p-3 rounded-lg border border-dark-border">
+                  <div className="flex justify-between items-center mb-2 cursor-pointer" onClick={() => setShowAiSettings(!showAiSettings)}>
+                      <h4 className="text-sm font-bold text-brand-light flex items-center gap-2">
+                          <Wand2Icon className="h-4 w-4" /> Customize
+                      </h4>
+                      <span className="text-dark-text-secondary text-xs">{showAiSettings ? 'Hide' : 'Show'}</span>
+                  </div>
+                  
+                  {showAiSettings && (
+                      <div className="space-y-3 animate-fade-in">
+                          <input 
+                              type="text" 
+                              value={customPrompt}
+                              onChange={(e) => setCustomPrompt(e.target.value)}
+                              placeholder={t('ai_custom_placeholder')}
+                              className="w-full bg-dark-bg border border-dark-border rounded px-2 py-1.5 text-sm text-dark-text focus:border-brand-primary outline-none"
+                          />
+                          {savedRules.length > 0 && (
+                            <div>
+                                <p className="text-xs text-dark-text-secondary mb-1">{t('select_rules_optional')}:</p>
+                                <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+                                    {savedRules.map(rule => (
+                                        <button 
+                                            key={rule.id}
+                                            onClick={() => toggleRule(rule.id)}
+                                            className={`text-xs px-2 py-1 rounded border transition-colors ${selectedRuleIds.has(rule.id) ? 'bg-brand-primary border-brand-primary text-white' : 'bg-dark-bg border-dark-border text-dark-text-secondary'}`}
+                                        >
+                                            {rule.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                          )}
+                      </div>
+                  )}
+              </div>
+
               <div className="mt-2">
                 <div className="flex justify-between items-center mb-2">
                     <h3 className="font-semibold text-dark-text">Suggestions</h3>
-                    <button onClick={fetchSuggestions} disabled={isLoading} className="p-2 rounded-full hover:bg-dark-card transition-colors disabled:opacity-50">
-                        <RefreshCwIcon className={`h-5 w-5 text-dark-text-secondary ${isLoading ? 'animate-spin' : ''}`} />
+                    <button onClick={fetchSuggestions} disabled={isLoading} className="flex items-center gap-2 px-3 py-1 bg-dark-card rounded-full hover:bg-gray-700 transition-colors disabled:opacity-50 text-dark-text-secondary">
+                        <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        <span className="text-xs">Refresh</span>
                     </button>
                 </div>
                 {isLoading ? (
@@ -131,7 +215,7 @@ const DishSelector: React.FC<DishSelectorProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {suggestions.map((dish, index) => (
+                    {suggestions.length > 0 ? suggestions.map((dish, index) => (
                       <DishCard 
                         key={`${dish.name}-${index}`} 
                         dish={dish} 
@@ -139,12 +223,17 @@ const DishSelector: React.FC<DishSelectorProps> = ({
                         onSave={onSaveRecipe}
                         isSaved={recipeNamesInBook.has(dish.name.toLowerCase())}
                       />
-                    ))}
+                    )) : (
+                        <div className="text-center py-8 text-dark-text-secondary">
+                            <p>Click Refresh to get AI suggestions.</p>
+                        </div>
+                    )}
                   </div>
                 )}
               </div>
             </div>
           )}
+          
           {activeTab === 'myRecipes' && (
              <div className="p-4">
                 <input
@@ -167,6 +256,27 @@ const DishSelector: React.FC<DishSelectorProps> = ({
                 )}
             </div>
           )}
+
+          {activeTab === 'freeText' && (
+              <div className="p-6 flex flex-col gap-4">
+                  <h3 className="text-lg font-bold text-dark-text">{t('free_text')}</h3>
+                  <input
+                    type="text"
+                    value={freeText}
+                    onChange={(e) => setFreeText(e.target.value)}
+                    placeholder={t('free_text_placeholder')}
+                    className="w-full bg-dark-card border border-dark-border rounded-md px-4 py-3 text-dark-text focus:ring-brand-primary focus:border-brand-primary text-lg"
+                    autoFocus
+                  />
+                  <button 
+                    onClick={handleFreeTextSubmit}
+                    disabled={!freeText.trim()}
+                    className="w-full bg-brand-primary hover:bg-brand-secondary text-white font-bold py-3 px-4 rounded-md transition-colors disabled:opacity-50"
+                  >
+                      {t('add_free_text')}
+                  </button>
+              </div>
+          )}
         </div>
       </div>
        <style>{`
@@ -175,6 +285,8 @@ const DishSelector: React.FC<DishSelectorProps> = ({
             to { transform: translateY(0); }
         }
         .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
       `}</style>
     </div>
   );

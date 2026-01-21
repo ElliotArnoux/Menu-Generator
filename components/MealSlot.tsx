@@ -30,8 +30,8 @@ const MealSlot: React.FC<MealSlotProps> = ({
 }) => {
 
   return (
-    <div className={`h-full flex flex-col gap-1 overflow-hidden ${isPrint ? 'p-0.5' : 'p-1 md:p-2'}`}>
-      <div className="flex justify-between items-center px-1">
+    <div className={`flex flex-col gap-1 min-h-[80px] lg:min-h-[100px] h-full ${isPrint ? 'p-0.5' : 'p-1 md:p-2'}`}>
+      <div className="flex justify-between items-center px-1 flex-shrink-0">
           <div className="flex items-center gap-1">
              <h4 className={`font-bold text-dark-text-secondary uppercase tracking-wider ${isPrint ? 'text-[8px]' : 'text-10px md:text-xs'}`}>{meal.name}</h4>
              {!isPrint && (
@@ -69,12 +69,11 @@ const MealSlot: React.FC<MealSlotProps> = ({
           )}
       </div>
       
-      <div className="flex-1 flex flex-col gap-1 min-h-0">
+      <div className="flex flex-col gap-1 flex-grow">
         {meal.subMeals.map((subMeal, subMealIndex) => (
             <div 
                 key={subMeal.id} 
-                // Mobile: basis-auto (stack naturally). Desktop: basis-0 (force split).
-                className={`min-h-[50px] lg:min-h-0 ${isPrint ? 'flex-1 basis-0' : 'basis-auto lg:flex-1 lg:basis-0'}`}
+                className="flex flex-col"
             >
                 <SubMealSlot 
                     subMeal={subMeal}

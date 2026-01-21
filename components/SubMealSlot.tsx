@@ -69,7 +69,6 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
 
   const handleRemoveDishClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Removed confirmation for immediate action
     onRemoveDish(dayIndex, mealIndex, subMeal.id);
   };
 
@@ -83,13 +82,12 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
   // PRINT MODE STYLES
   const containerClasses = isPrint 
     ? `h-full flex flex-col pl-1 border-l-2 ${borderColorClass} overflow-hidden`
-    : `h-full flex flex-col pl-2 border-l-2 md:border-l-4 ${borderColorClass} transition-colors overflow-hidden`;
+    : `min-h-[70px] lg:min-h-[80px] flex flex-col pl-2 border-l-2 md:border-l-4 ${borderColorClass} transition-colors overflow-hidden`;
 
   const titleClasses = isPrint
     ? "text-[8px] font-bold text-dark-text-secondary truncate leading-none mb-0.5"
     : "text-[10px] md:text-xs font-semibold text-dark-text-secondary group-hover:text-dark-text transition-colors truncate";
 
-  // Updated: Use flex-1 and min-w-0 for proper truncation in flex container
   const dishNameClasses = isPrint
     ? "font-bold text-brand-light text-[9px] truncate leading-tight w-full"
     : "font-semibold text-brand-light text-xs truncate max-w-full";
@@ -100,9 +98,8 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
 
   const cardClasses = isPrint
     ? "flex-1 flex flex-col h-full bg-dark-card/50 p-1 rounded-sm text-left overflow-hidden justify-center"
-    : "flex-1 flex flex-col h-full bg-dark-card/50 p-1.5 md:p-2 rounded-md text-left transition hover:bg-dark-card overflow-hidden relative group/card";
+    : "flex-1 flex flex-col min-h-[50px] bg-dark-card/50 p-1.5 md:p-2 rounded-md text-left transition hover:bg-dark-card overflow-hidden relative group/card";
   
-  // Layout for content inside the card
   const cardContentClasses = isPrint
     ? "flex flex-col items-start gap-0.5 w-full"
     : "flex items-center gap-1 mb-0.5 flex-wrap w-full";
@@ -164,7 +161,6 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
                      <MinusCircleIcon className="h-3 w-3" />
                  </button>
               )}
-              {/* Container for title and chips */}
               <div className={cardContentClasses}>
                   <span className={dishNameClasses}>{subMeal.dish.name}</span>
                   {!isPrint && (

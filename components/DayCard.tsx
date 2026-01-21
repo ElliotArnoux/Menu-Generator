@@ -26,11 +26,11 @@ const DayCard: React.FC<DayCardProps> = ({
     onRenameSubMeal, onRemoveSubMeal, onRemoveDish, onRemoveMeal, onAddMeal, 
     onMoveMeal, onMoveSubMeal, t, isPrint = false 
 }) => {
-  // Mobile: h-auto to grow. Desktop/Print: h-full to fit grid.
-  // Mobile: No overflow hidden so sections can be seen. Desktop: Overflow hidden to stay in box.
+  // Use h-full so the card stretches to fill the grid row height.
+  // This ensures harmony: if Monday grows, Tuesday-Friday also stretch their backgrounds.
   const containerClass = isPrint 
     ? "bg-white rounded-none border border-gray-300 h-full flex flex-col overflow-hidden" 
-    : "bg-dark-card rounded-xl shadow-lg border border-dark-border flex flex-col h-auto lg:h-full lg:overflow-hidden";
+    : "bg-dark-card rounded-xl shadow-lg border border-dark-border flex flex-col h-full overflow-hidden";
 
   return (
     <div className={containerClass}>
@@ -46,10 +46,10 @@ const DayCard: React.FC<DayCardProps> = ({
               </button>
           )}
       </div>
-      <div className={`flex-1 flex flex-col ${isPrint || 'lg:overflow-hidden'}`}>
+      <div className={`flex flex-col flex-grow ${isPrint ? '' : 'gap-0'}`}>
         {day.meals.length > 0 ? (
             day.meals.map((meal, mealIndex) => (
-            <div key={`${meal.name}-${mealIndex}`} className={`border-t ${isPrint ? 'border-gray-200' : 'border-dark-border'} first:border-t-0 min-h-0 ${isPrint || 'lg:flex-1'}`}>
+            <div key={`${meal.name}-${mealIndex}`} className={`border-t ${isPrint ? 'border-gray-200' : 'border-dark-border'} first:border-t-0 flex-grow`}>
                 <MealSlot
                     meal={meal}
                     dayIndex={dayIndex}
@@ -71,7 +71,7 @@ const DayCard: React.FC<DayCardProps> = ({
             </div>
             ))
         ) : (
-            <div className="flex-1 flex items-center justify-center p-4 text-dark-text-secondary text-sm italic min-h-[100px]">
+            <div className="flex flex-col items-center justify-center p-4 text-dark-text-secondary text-sm italic min-h-[100px] flex-grow">
                 {!isPrint ? (
                     <button 
                         onClick={() => onAddMeal(dayIndex)}

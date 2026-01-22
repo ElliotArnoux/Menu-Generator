@@ -4,6 +4,7 @@ import { Dish, AppLanguage, SavedRule } from '../types';
 import { getMealSuggestions } from '../services/geminiService';
 import DishCard from './DishCard';
 import { XIcon, RefreshCwIcon, Wand2Icon } from './icons';
+import RecipeForm from './RecipeForm';
 
 interface DishSelectorProps {
   isOpen: boolean;
@@ -16,13 +17,16 @@ interface DishSelectorProps {
   savedRules: SavedRule[];
   t: (key: string) => string;
   language: AppLanguage;
+  ingredientStoreMap: Record<string, string>;
+  onAddCategory: (name: string) => void;
+  onDeleteCategory: (name: string) => void;
 }
 
 const DishSelector: React.FC<DishSelectorProps> = ({ 
     isOpen, onClose, onSelectDish, onSaveRecipe, mealIdentifier, recipeBook, 
-    categories, savedRules, t, language
+    categories, savedRules, t, language, ingredientStoreMap, onAddCategory, onDeleteCategory
 }) => {
-  const [activeTab, setActiveTab] = useState<'ai' | 'myRecipes' | 'freeText'>('ai');
+  const [activeTab, setActiveTab] = useState<'ai' | 'myRecipes' | 'freeText' | 'create'>('myRecipes');
   const [selectedCategory, setSelectedCategory] = useState<string>('Any');
   const [suggestions, setSuggestions] = useState<Dish[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,14 +68,14 @@ const DishSelector: React.FC<DishSelectorProps> = ({
     if (isOpen && mealIdentifier && activeTab === 'ai' && suggestions.length === 0) {
       fetchSuggestions();
     }
-  }, [isOpen, activeTab]); // Dependencies simplified to avoid infinite loop with fetchSuggestions
+  }, [isOpen, activeTab]); 
   
   useEffect(() => {
     if (isOpen) {
         setActiveTab(recipeBook.length > 0 ? 'myRecipes' : 'ai');
         setSearchTerm('');
         setFreeText('');
-        setSuggestions([]); // Clear previous suggestions
+        setSuggestions([]); 
     }
   }, [isOpen, recipeBook.length]);
 
@@ -103,9 +107,19 @@ const DishSelector: React.FC<DishSelectorProps> = ({
       onSelectDish({
           id: Date.now().toString(),
           name: freeText,
-          description: '', // Empty description for free text
+          description: '', 
           ingredients: []
       });
+      onClose();
+  };
+
+  const handleCreateAndSelect = (dish: Omit<Dish, 'id'> | Dish) => {
+      const newDish = {
+          ...dish,
+          id: ('id' in dish && dish.id) ? dish.id : Date.now().toString()
+      };
+      onSaveRecipe(newDish);
+      onSelectDish(newDish);
       onClose();
   };
 
@@ -130,14 +144,15 @@ const DishSelector: React.FC<DishSelectorProps> = ({
         </header>
 
         <div className="p-4 flex-shrink-0 border-b border-dark-border">
-            <div className="flex bg-dark-card p-1 rounded-lg">
-                <button onClick={() => setActiveTab('myRecipes')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'myRecipes' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('my_recipes')}</button>
-                <button onClick={() => setActiveTab('ai')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'ai' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>AI</button>
-                <button onClick={() => setActiveTab('freeText')} className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${activeTab === 'freeText' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('free_text')}</button>
+            <div className="flex bg-dark-card p-1 rounded-lg overflow-x-auto whitespace-nowrap scrollbar-hide">
+                <button onClick={() => setActiveTab('myRecipes')} className={`flex-1 min-w-[100px] py-2 text-xs md:text-sm font-semibold rounded-md transition-colors ${activeTab === 'myRecipes' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('my_recipes')}</button>
+                <button onClick={() => setActiveTab('ai')} className={`flex-1 min-w-[100px] py-2 text-xs md:text-sm font-semibold rounded-md transition-colors ${activeTab === 'ai' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>AI</button>
+                <button onClick={() => setActiveTab('create')} className={`flex-1 min-w-[100px] py-2 text-xs md:text-sm font-semibold rounded-md transition-colors ${activeTab === 'create' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('tab_create')}</button>
+                <button onClick={() => setActiveTab('freeText')} className={`flex-1 min-w-[100px] py-2 text-xs md:text-sm font-semibold rounded-md transition-colors ${activeTab === 'freeText' ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-700'}`}>{t('free_text')}</button>
             </div>
         </div>
 
-        {activeTab !== 'freeText' && (
+        {activeTab !== 'freeText' && activeTab !== 'create' && (
             <div className="px-4 py-2 border-b border-dark-border">
                 <p className="text-sm text-dark-text-secondary mb-2">{t('categories')}:</p>
                 <div className="flex flex-wrap gap-2">
@@ -163,7 +178,6 @@ const DishSelector: React.FC<DishSelectorProps> = ({
         <div className="overflow-y-auto flex-grow">
           {activeTab === 'ai' && (
             <div className="p-4">
-               {/* AI Customization Section */}
               <div className="mb-4 bg-dark-card/50 p-3 rounded-lg border border-dark-border">
                   <div className="flex justify-between items-center mb-2 cursor-pointer" onClick={() => setShowAiSettings(!showAiSettings)}>
                       <h4 className="text-sm font-bold text-brand-light flex items-center gap-2">
@@ -257,6 +271,21 @@ const DishSelector: React.FC<DishSelectorProps> = ({
             </div>
           )}
 
+          {activeTab === 'create' && (
+              <div className="p-4">
+                  <RecipeForm 
+                    editingRecipe={null}
+                    onSave={handleCreateAndSelect}
+                    onCancel={() => setActiveTab('myRecipes')}
+                    categories={categories}
+                    t={t}
+                    ingredientStoreMap={ingredientStoreMap}
+                    onAddCategory={onAddCategory}
+                    onDeleteCategory={onDeleteCategory}
+                  />
+              </div>
+          )}
+
           {activeTab === 'freeText' && (
               <div className="p-6 flex flex-col gap-4">
                   <h3 className="text-lg font-bold text-dark-text">{t('free_text')}</h3>
@@ -287,6 +316,8 @@ const DishSelector: React.FC<DishSelectorProps> = ({
         .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in { animation: fade-in 0.2s ease-out forwards; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   );

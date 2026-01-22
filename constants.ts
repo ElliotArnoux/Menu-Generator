@@ -65,6 +65,7 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'tab_planner': { es: 'Planificador', en: 'Planner', fr: 'Planning' },
     'tab_recipes': { es: 'Recetas', en: 'Recipes', fr: 'Recettes' },
     'tab_rules': { es: 'Reglas', en: 'Rules', fr: 'Règles' },
+    'tab_create': { es: 'Crear', en: 'Create', fr: 'Créer' },
 
     // Actions
     'save': { es: 'Guardar', en: 'Save', fr: 'Enregistrer' },
@@ -80,9 +81,9 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'import': { es: 'Importar JSON', en: 'Import JSON', fr: 'Importer JSON' },
     'load': { es: 'Cargar', en: 'Load', fr: 'Charger' },
     'new_menu': { es: 'Nuevo Menú', en: 'New Menu', fr: 'Nouveau Menu' },
-    'confirm_new_week': { es: '¿Crear un nuevo menú? Se perderá la configuración actual.', en: 'Create new menu? Current configuration will be lost.', fr: 'Créer un nouveau menu ? La configuration actuelle sera perdue.' },
+    'confirm_new_week': { es: '¿Crear un nuevo menú? Se perderá la configuración actual.', en: 'Create new menu? Current configuration will be lost.', fr: 'Créer un nuevo menu ? La configuration actuelle será perdue.' },
     'clear_week': { es: 'Limpiar Semana', en: 'Clear Week', fr: 'Effacer la Semaine' },
-    'confirm_clear_week': { es: '¿Estás seguro de que quieres borrar todo el menú de la semana?', en: 'Are you sure you want to clear the entire week menu?', fr: 'Êtes-vous sûr de vouloir effacer tout le menu de la semaine ?' },
+    'confirm_clear_week': { es: '¿Estás seguro de que quieres borrar todo el menú de la semana?', en: 'Are you sure you want to clear the entire week menu?', fr: 'Êtes-vous sûr de vouloir effacer tout le menu de la semana ?' },
     'import_week': { es: 'Importar Semana', en: 'Import Week', fr: 'Importer Semaine' },
     'export_week': { es: 'Exportar Semana', en: 'Export Week', fr: 'Exporter Semaine' },
 
@@ -153,7 +154,7 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
 
     // Recipe Book
     'my_recipes': { es: 'Mis Recetas', en: 'My Recipes', fr: 'Mes Recettes' },
-    'add_recipe': { es: 'Añadir Nueva Receta', en: 'Add New Recipe', fr: 'Ajouter une Recette' },
+    'add_recipe': { es: 'Añadir Nueva Receta', en: 'Add New Recipe', fr: 'Ajouter una Recette' },
     'edit_recipe': { es: 'Editar Receta', en: 'Edit Recipe', fr: 'Modifier la Recette' },
     'recipe_name': { es: 'Nombre de la Receta', en: 'Recipe Name', fr: 'Nom de la Recette' },
     'description': { es: 'Descripción', en: 'Description', fr: 'Description' },
@@ -173,7 +174,7 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     // Generator
     'select_rules': { es: 'Selecciona tus reglas', en: 'Select your rules', fr: 'Sélectionnez vos règles' },
     'add_instructions': { es: 'Añadir instrucciones adicionales', en: 'Add additional instructions', fr: 'Ajouter des instructions supplémentaires' },
-    'custom_instructions_placeholder': { es: 'Ej: Tenemos invitados el sábado...', en: 'Ex: We have guests on Saturday...', fr: 'Ex: Nous avons des invités samedi...' },
+    'custom_instructions_placeholder': { es: 'Ej: Tenemos invitados el sábado...', en: 'Ex: We have guests on Saturday...', fr: 'Ex: Nous avons des invitados sábado...' },
     
     // Grocery List
     'grocery_list': { es: 'Lista de la Compra', en: 'Grocery List', fr: 'Liste de Courses' },
@@ -182,9 +183,9 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'item_count': { es: 'platos', en: 'dishes', fr: 'plats' },
 
     // Print
-    'print_preview': { es: 'Vista Previa de Impresión', en: 'Print Preview', fr: 'Aperçu avant Impression' },
+    'print_preview': { es: 'Vista Previa de Impresión', en: 'Print Preview', fr: 'Aperçu antes de la impresión' },
     'select_start_date': { es: 'Selecciona fecha de inicio', en: 'Select start date', fr: 'Sélectionnez la date de début' },
-    'confirm_print': { es: 'Imprimir', en: 'Print', fr: 'Imprimer' },
+    'confirm_print': { es: 'Imprimir', en: 'Print', fr: 'Imprimir' },
 
     // Week View
     'week_notes_placeholder': { es: 'Notas de la semana (ej: Semana del 12 de Octubre)...', en: 'Week notes (e.g. Week of October 12th)...', fr: 'Notes de la semaine (ex: Semaine du 12 octobre)...' },

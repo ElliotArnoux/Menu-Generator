@@ -50,23 +50,16 @@ function App() {
   });
   
   // Calculate display suggestions for submeals (combining translated defaults + history)
-  // We don't save the translated default in history, we generate it on fly
   const [subMealNameHistory, setSubMealNameHistory] = useState<string[]>([]);
   
   const currentSectionSuggestions = useMemo(() => {
       const defaults = DEFAULT_SECTION_SUGGESTIONS.map(key => t(key));
-      // Combine defaults with custom history, removing duplicates
       return Array.from(new Set([...defaults, ...subMealNameHistory]));
   }, [t, subMealNameHistory]);
 
   const currentDishCategories = useMemo(() => {
-      // Categories can be keys (like 'cat_fish') or custom strings ('My Custom Tag')
-      // If it matches a known translation key, translate it. If not, show as is.
       const defaults = DEFAULT_DISH_CATEGORIES.map(key => key); // keys
       const allCats = Array.from(new Set([...defaults, ...dishCategories]));
-      
-      // We return the raw list to the view, the View uses t() to display.
-      // But for custom categories added by user that are NOT in translations, t() returns the key itself.
       return allCats;
   }, [dishCategories]);
 
@@ -101,7 +94,6 @@ function App() {
       const saved = localStorage.getItem('saved_weeks');
       if (saved) return JSON.parse(saved);
       
-      // Default template if no saved weeks
       const emptyMenu = initializeWeekMenu();
       return [{
           id: 'default-new-menu',
@@ -131,23 +123,14 @@ function App() {
       return saved ? JSON.parse(saved) : {};
   });
 
-  // Grocery List Checked Items State (lifted from GroceryListView)
   const [checkedGroceryItems, setCheckedGroceryItems] = useState<Record<string, boolean>>({});
 
-  // Dynamic Suggestions for Meals
   const mealSuggestions = useMemo(() => {
     if (!addingMealTo) return [];
-    
     const day = weekMenu[addingMealTo.dayIndex];
     if (!day) return [];
-    
-    // Get keys present in this day
     const existingKeys = new Set(day.meals.map(m => m.name));
-    
-    // Find missing standard keys
     const missingKeys = STANDARD_MEAL_KEYS.filter(k => !existingKeys.has(k));
-    
-    // Return translated suggestions
     return missingKeys.map(k => t(k));
   }, [addingMealTo, weekMenu, t]);
 
@@ -167,7 +150,6 @@ function App() {
       }
   };
   const handleDeleteDishCategory = (name: string) => {
-      // Only delete if it's not a default
       if (!DEFAULT_DISH_CATEGORIES.includes(name)) {
          setDishCategories(dishCategories.filter(c => c !== name));
       }
@@ -197,13 +179,11 @@ function App() {
   };
 
   const handleImportRules = (data: { rules: SavedRule[], categories: RuleCategory[] }) => {
-      // Merge categories
       const currentCatIds = new Set(ruleCategories.map(c => c.id));
       const currentCatNames = new Set(ruleCategories.map(c => c.name.toLowerCase()));
       const newCategories = data.categories.filter(c => !currentCatIds.has(c.id) && !currentCatNames.has(c.name.toLowerCase()));
       const mergedCategories = [...ruleCategories, ...newCategories];
       
-      // Merge rules
       const currentRuleIds = new Set(savedRules.map(r => r.id));
       const newRules = data.rules.filter(r => !currentRuleIds.has(r.id));
       const mergedRules = [...savedRules, ...newRules];
@@ -253,7 +233,6 @@ function App() {
 
   const handleSaveRecipe = (recipeToSave: Omit<Dish, 'id'> | Dish) => {
     if (recipeBook.some(recipe => recipe.name.toLowerCase() === recipeToSave.name.toLowerCase())) {
-      alert('Ya existe una receta con este nombre.');
       return;
     }
     const newRecipe: Dish = {
@@ -261,18 +240,14 @@ function App() {
       id: ('id' in recipeToSave && recipeToSave.id) ? recipeToSave.id : Date.now().toString(),
     };
     
-    // Update store map persistence
     updateIngredientStores(newRecipe);
-
     setRecipeBook(prevRecipes => [newRecipe, ...prevRecipes]);
-    alert('¡Receta guardada!');
   };
 
   const handleUpdateRecipe = (updatedRecipe: Dish) => {
     updateIngredientStores(updatedRecipe);
     setRecipeBook(prev => prev.map(r => r.id === updatedRecipe.id ? updatedRecipe : r));
     setEditingRecipe(null);
-    alert('¡Receta actualizada!');
   };
 
   const handleEditFromDetailModal = (dishToEdit: Dish) => {
@@ -281,8 +256,6 @@ function App() {
         setViewingDish(null);
         setCurrentView('recipes');
         setEditingRecipe(recipeInBook);
-    } else {
-        alert("No se pudo encontrar la receta para editar.");
     }
   };
 
@@ -300,7 +273,6 @@ function App() {
 
         const newMenuFromAI = await generateFullWeekMenu(rulesPrompt, translatedWeekMenu, recipeBook, language, currentDishCategories);
 
-        // MERGE LOGIC:
         const mergedMenu = weekMenu.map((day, dIdx) => ({
             ...day,
             meals: day.meals.map((meal, mIdx) => ({
@@ -317,7 +289,7 @@ function App() {
                              ...subMeal, 
                              dish: {
                                  ...aiSubMeal.dish,
-                                 id: Date.now().toString() + Math.random() // Ensure new ID
+                                 id: Date.now().toString() + Math.random() 
                              }
                          };
                     }
@@ -352,7 +324,6 @@ function App() {
         return newMenu;
     });
     
-    // If name is NOT in translations, add to custom history
     const isTranslatedDefault = DEFAULT_SECTION_SUGGESTIONS.some(key => t(key) === name);
     if (!isTranslatedDefault && !subMealNameHistory.includes(name)) {
         setSubMealNameHistory(prev => [...prev, name]);
@@ -361,7 +332,6 @@ function App() {
   };
 
   const handleAddMeal = (dayIndex: number, name: string) => {
-      // Reverse map: If user selected a translated standard key, save the key instead of the translation
       const standardKey = STANDARD_MEAL_KEYS.find(k => t(k).toLowerCase() === name.toLowerCase());
       const finalName = standardKey || name;
 
@@ -486,7 +456,6 @@ function App() {
               id: r.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
           }));
           
-          // Also update store map from imported recipes
           const newMap = { ...ingredientStoreMap };
           newRecipes.forEach(r => {
               r.ingredients?.forEach(ing => {
@@ -508,8 +477,7 @@ function App() {
           const currentIds = new Set(currentWeeks.map(w => w.id));
           
           const newWeeks = importedWeeks.filter(w => {
-              if (currentIds.has(w.id)) return false; // Simple dup check ID
-              // Could also check name duplicates but let's allow it with unique IDs
+              if (currentIds.has(w.id)) return false; 
               return true;
           }).map(w => ({
              ...w,
@@ -543,7 +511,6 @@ function App() {
   };
 
   const handleLoadWeek = (week: SavedWeek) => {
-      // Deep copy to ensure no reference issues
       setWeekMenu(JSON.parse(JSON.stringify(week.menu)));
       setWeekNotes(week.notes);
       setAppliedRuleNames(week.ruleNames);
@@ -556,7 +523,7 @@ function App() {
       if (week) {
           handleLoadWeek(week);
       }
-      e.target.value = ''; // Reset select
+      e.target.value = ''; 
   };
 
   const handleDeleteWeek = (id: string) => {
@@ -575,7 +542,6 @@ function App() {
       });
   };
 
-  // Transform weekMenu for display (translation) with useMemo to prevent unnecessary re-renders
   const displayWeekMenu = useMemo(() => weekMenu.map(day => ({
       ...day,
       name: t(day.name),
@@ -658,6 +624,9 @@ function App() {
             savedRules={savedRules}
             t={t}
             language={language}
+            ingredientStoreMap={ingredientStoreMap}
+            onAddCategory={handleAddDishCategory}
+            onDeleteCategory={handleDeleteDishCategory}
           />
 
           <GroceryListView 

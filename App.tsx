@@ -20,15 +20,15 @@ import PrintWeekModal from './components/PrintWeekModal';
 import PrintGroceryModal from './components/PrintGroceryModal';
 import SavedWeeksModal from './components/SavedWeeksModal';
 import { initialRecipes } from './initialRecipes';
+import html2canvas from 'html2canvas';
 
 const STANDARD_MEAL_KEYS = ['breakfast', 'lunch', 'snack', 'dinner'];
 
-// Helper to create a fresh empty week
 const initializeWeekMenu = (): Day[] => {
     return DAYS_OF_WEEK_KEYS.map(dayKey => ({
-      name: dayKey, // Store key, translate on render
+      name: dayKey,
       meals: MEAL_NAMES_KEYS.map(mealKey => ({
-        name: mealKey, // Store key
+        name: mealKey,
         subMeals: [{ id: Date.now().toString() + Math.random(), name: 'Main', dish: null }], 
       })),
     }));
@@ -36,20 +36,50 @@ const initializeWeekMenu = (): Day[] => {
 
 function App() {
   const [language, setLanguage] = useState<AppLanguage>('es');
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+      const saved = localStorage.getItem('theme');
+      return saved ? saved === 'dark' : true;
+  });
   
-  // Helper for translations
+  const [activeWeekId, setActiveWeekId] = useState<string | null>(() => {
+      return localStorage.getItem('active_week_id');
+  });
+
+  const [hiddenDayKeys, setHiddenDayKeys] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('hidden_day_keys');
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add('bg-dark-bg', 'text-dark-text');
+      document.body.classList.remove('bg-white', 'text-gray-900');
+    } else {
+      document.body.classList.add('bg-white', 'text-gray-900');
+      document.body.classList.remove('bg-dark-bg', 'text-dark-text');
+    }
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
+  useEffect(() => {
+      if (activeWeekId) localStorage.setItem('active_week_id', activeWeekId);
+      else localStorage.removeItem('active_week_id');
+  }, [activeWeekId]);
+
+  useEffect(() => {
+    localStorage.setItem('hidden_day_keys', JSON.stringify(Array.from(hiddenDayKeys)));
+  }, [hiddenDayKeys]);
+
   const t = useCallback((key: string): string => {
       const translation = TRANSLATIONS[key]?.[language];
-      return translation || key; // Fallback to key if not found
+      return translation || key;
   }, [language]);
 
-  // Lazy initialize categories from LocalStorage
   const [dishCategories, setDishCategories] = useState<string[]>(() => {
       const saved = localStorage.getItem('dish_categories');
       return saved ? JSON.parse(saved) : [];
   });
   
-  // Calculate display suggestions for submeals (combining translated defaults + history)
   const [subMealNameHistory, setSubMealNameHistory] = useState<string[]>([]);
   
   const currentSectionSuggestions = useMemo(() => {
@@ -57,19 +87,20 @@ function App() {
       return Array.from(new Set([...defaults, ...subMealNameHistory]));
   }, [t, subMealNameHistory]);
 
-  const currentDishCategories = useMemo(() => {
-      const defaults = DEFAULT_DISH_CATEGORIES.map(key => key); // keys
-      const allCats = Array.from(new Set([...defaults, ...dishCategories]));
-      return allCats;
-  }, [dishCategories]);
+  const mealSuggestions = useMemo(() => {
+      return STANDARD_MEAL_KEYS.map(key => t(key));
+  }, [t]);
 
+  const currentDishCategories = useMemo(() => {
+      const defaults = DEFAULT_DISH_CATEGORIES.map(key => key);
+      return Array.from(new Set([...defaults, ...dishCategories]));
+  }, [dishCategories]);
 
   const [weekMenu, setWeekMenu] = useState<Day[]>(initializeWeekMenu());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGroceryListOpen, setIsGroceryListOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ dayIndex: number; mealIndex: number; subMealId: string } | null>(null);
   
-  // Lazy initialize recipes
   const [recipeBook, setRecipeBook] = useState<Dish[]>(() => {
       const saved = localStorage.getItem('saved_recipes');
       return saved ? JSON.parse(saved) : initialRecipes;
@@ -89,53 +120,38 @@ function App() {
   const [weekNotes, setWeekNotes] = useState('');
   const [appliedRuleNames, setAppliedRuleNames] = useState<string[]>([]);
   
-  // Lazy initialize saved weeks
   const [savedWeeks, setSavedWeeks] = useState<SavedWeek[]>(() => {
       const saved = localStorage.getItem('saved_weeks');
       if (saved) return JSON.parse(saved);
-      
-      const emptyMenu = initializeWeekMenu();
       return [{
           id: 'default-new-menu',
           name: 'New Menu', 
-          menu: emptyMenu,
+          menu: initializeWeekMenu(),
           notes: '',
           ruleNames: []
       }];
   });
 
-  const [isSavedWeeksModalOpen, setIsSavedWeeksModalOpen] = useState(false);
+  const activeWeekName = useMemo(() => {
+    const week = savedWeeks.find(w => w.id === activeWeekId);
+    return week ? week.name : t('new_menu');
+  }, [savedWeeks, activeWeekId, t]);
 
-  // Lazy initialize Rules & Categories
+  const [isSavedWeeksModalOpen, setIsSavedWeeksModalOpen] = useState(false);
   const [savedRules, setSavedRules] = useState<SavedRule[]>(() => {
       const saved = localStorage.getItem('saved_rules_v2');
       return saved ? JSON.parse(saved) : [];
   });
-  
   const [ruleCategories, setRuleCategories] = useState<RuleCategory[]>(() => {
       const saved = localStorage.getItem('rule_categories');
       return saved ? JSON.parse(saved) : [];
   });
-
-  // Lazy initialize Ingredient Stores
   const [ingredientStoreMap, setIngredientStoreMap] = useState<Record<string, string>>(() => {
       const saved = localStorage.getItem('ingredient_stores');
       return saved ? JSON.parse(saved) : {};
   });
-
   const [checkedGroceryItems, setCheckedGroceryItems] = useState<Record<string, boolean>>({});
 
-  const mealSuggestions = useMemo(() => {
-    if (!addingMealTo) return [];
-    const day = weekMenu[addingMealTo.dayIndex];
-    if (!day) return [];
-    const existingKeys = new Set(day.meals.map(m => m.name));
-    const missingKeys = STANDARD_MEAL_KEYS.filter(k => !existingKeys.has(k));
-    return missingKeys.map(k => t(k));
-  }, [addingMealTo, weekMenu, t]);
-
-
-  // Save changes
   useEffect(() => { localStorage.setItem('saved_rules_v2', JSON.stringify(savedRules)); }, [savedRules]);
   useEffect(() => { localStorage.setItem('rule_categories', JSON.stringify(ruleCategories)); }, [ruleCategories]);
   useEffect(() => { localStorage.setItem('dish_categories', JSON.stringify(dishCategories)); }, [dishCategories]);
@@ -143,7 +159,6 @@ function App() {
   useEffect(() => { localStorage.setItem('saved_weeks', JSON.stringify(savedWeeks)); }, [savedWeeks]);
   useEffect(() => { localStorage.setItem('saved_recipes', JSON.stringify(recipeBook)); }, [recipeBook]);
 
-  // Dish Category Management
   const handleAddDishCategory = (name: string) => {
       if (!dishCategories.includes(name) && !DEFAULT_DISH_CATEGORIES.includes(name)) {
           setDishCategories([...dishCategories, name]);
@@ -155,7 +170,6 @@ function App() {
       }
   };
 
-  // Rule Handlers
   const handleAddRule = (rule: Omit<SavedRule, 'id'>) => {
       const newRule = { ...rule, id: Date.now().toString() + Math.random() };
       setSavedRules([...savedRules, newRule]);
@@ -182,16 +196,106 @@ function App() {
       const currentCatIds = new Set(ruleCategories.map(c => c.id));
       const currentCatNames = new Set(ruleCategories.map(c => c.name.toLowerCase()));
       const newCategories = data.categories.filter(c => !currentCatIds.has(c.id) && !currentCatNames.has(c.name.toLowerCase()));
-      const mergedCategories = [...ruleCategories, ...newCategories];
-      
+      setRuleCategories([...ruleCategories, ...newCategories]);
       const currentRuleIds = new Set(savedRules.map(r => r.id));
       const newRules = data.rules.filter(r => !currentRuleIds.has(r.id));
-      const mergedRules = [...savedRules, ...newRules];
-
-      setRuleCategories(mergedCategories);
-      setSavedRules(mergedRules);
-      alert(`Imported ${newRules.length} rules and ${newCategories.length} categories.`);
+      setSavedRules([...savedRules, ...newRules]);
   };
+
+  const handleImportRecipes = (importedRecipes: Dish[]) => {
+      setRecipeBook(prev => [...importedRecipes, ...prev]);
+  };
+
+  const handleToggleGroceryItem = (id: string) => {
+    setCheckedGroceryItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handlePrintClick = (mode: 'week' | 'grocery') => {
+    if (mode === 'week') setIsPrintWeekModalOpen(true);
+    else setIsPrintGroceryModalOpen(true);
+  };
+
+  const handleScreenshot = useCallback(async () => {
+    if (currentView !== 'planner') {
+        setCurrentView('planner');
+        await new Promise(r => setTimeout(r, 200));
+    }
+
+    const element = document.getElementById('week-view-container');
+    if (!element) return;
+
+    try {
+        const canvas = await html2canvas(element, {
+            backgroundColor: isDarkMode ? '#111827' : '#ffffff',
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            onclone: (clonedDoc) => {
+                const container = clonedDoc.getElementById('week-view-container');
+                if (container) {
+                    // Reset container styles for a full-width layout
+                    container.style.height = 'auto';
+                    container.style.minHeight = 'auto';
+                    container.style.width = '1600px'; 
+                    container.style.overflow = 'visible';
+                    container.style.display = 'flex';
+                    container.style.flexDirection = 'column';
+
+                    // Force the days row into a horizontal grid
+                    const daysWrapper = container.querySelector('.flex-grow.overflow-x-auto');
+                    const daysGrid = container.querySelector('.flex.gap-4.min-w-max, .md\\:grid-cols-7');
+                    
+                    if (daysWrapper) {
+                        (daysWrapper as HTMLElement).style.overflow = 'visible';
+                    }
+
+                    if (daysGrid) {
+                        (daysGrid as HTMLElement).style.display = 'grid';
+                        (daysGrid as HTMLElement).style.gridTemplateColumns = 'repeat(7, 1fr)';
+                        (daysGrid as HTMLElement).style.width = '100%';
+                        (daysGrid as HTMLElement).style.gap = '12px';
+                        (daysGrid as HTMLElement).style.padding = '20px';
+                        
+                        // Ensure all cards are visible and sized correctly
+                        daysGrid.querySelectorAll('.w-\\[300px\\], md\\:w-auto').forEach(card => {
+                            (card as HTMLElement).style.width = '100%';
+                            (card as HTMLElement).style.height = 'auto';
+                        });
+                    }
+
+                    // Move footer to the absolute bottom of the container
+                    const footer = container.querySelector('.sticky.bottom-0');
+                    if (footer) {
+                        (footer as HTMLElement).style.position = 'relative';
+                        (footer as HTMLElement).style.bottom = 'auto';
+                        (footer as HTMLElement).style.marginTop = 'auto';
+                        (footer as HTMLElement).style.boxShadow = 'none';
+                        (footer as HTMLElement).style.borderTop = '2px solid #ccc';
+                    }
+
+                    // Force ALL elements to stop truncating text
+                    const elementsWithTruncate = clonedDoc.querySelectorAll('.truncate, .line-clamp-1, .line-clamp-2, .line-clamp-3, .overflow-hidden');
+                    elementsWithTruncate.forEach(el => {
+                        (el as HTMLElement).style.whiteSpace = 'normal';
+                        (el as HTMLElement).style.overflow = 'visible';
+                        (el as HTMLElement).style.textOverflow = 'clip';
+                        (el as HTMLElement).style.display = 'block';
+                        (el as HTMLElement).style.webkitLineClamp = 'unset';
+                        (el as HTMLElement).style.maxHeight = 'none';
+                    });
+                }
+            }
+        });
+
+        const link = document.createElement('a');
+        link.download = `plan_menu_${activeWeekName.replace(/\s+/g, '_').toLowerCase()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    } catch (err) {
+        console.error("Screenshot failed:", err);
+        alert("Error capturing screenshot.");
+    }
+  }, [currentView, isDarkMode, activeWeekName]);
 
   const handleSelectSlot = (dayIndex: number, mealIndex: number, subMealId: string) => {
     setSelectedSlot({ dayIndex, mealIndex, subMealId });
@@ -209,9 +313,7 @@ function App() {
     setWeekMenu(prevMenu => {
       const newMenu = JSON.parse(JSON.stringify(prevMenu));
       const subMeal = newMenu[dayIndex].meals[mealIndex].subMeals.find((sm: any) => sm.id === subMealId);
-      if (subMeal) {
-        subMeal.dish = dish;
-      }
+      if (subMeal) subMeal.dish = dish;
       return newMenu;
     });
   };
@@ -226,20 +328,15 @@ function App() {
             hasChanges = true;
         }
     });
-    if (hasChanges) {
-        setIngredientStoreMap(newMap);
-    }
+    if (hasChanges) setIngredientStoreMap(newMap);
   };
 
   const handleSaveRecipe = (recipeToSave: Omit<Dish, 'id'> | Dish) => {
-    if (recipeBook.some(recipe => recipe.name.toLowerCase() === recipeToSave.name.toLowerCase())) {
-      return;
-    }
+    if (recipeBook.some(recipe => recipe.name.toLowerCase() === recipeToSave.name.toLowerCase())) return;
     const newRecipe: Dish = {
       ...recipeToSave,
       id: ('id' in recipeToSave && recipeToSave.id) ? recipeToSave.id : Date.now().toString(),
     };
-    
     updateIngredientStores(newRecipe);
     setRecipeBook(prevRecipes => [newRecipe, ...prevRecipes]);
   };
@@ -265,39 +362,28 @@ function App() {
         const translatedWeekMenu = weekMenu.map(day => ({
             ...day,
             name: t(day.name),
-            meals: day.meals.map(meal => ({
-                ...meal,
-                name: t(meal.name)
-            }))
+            meals: day.meals.map(meal => ({ ...meal, name: t(meal.name) }))
         }));
-
         const newMenuFromAI = await generateFullWeekMenu(rulesPrompt, translatedWeekMenu, recipeBook, language, currentDishCategories);
-
         const mergedMenu = weekMenu.map((day, dIdx) => ({
             ...day,
             meals: day.meals.map((meal, mIdx) => ({
                 ...meal,
                 subMeals: meal.subMeals.map((subMeal, sIdx) => {
                     if (subMeal.dish) return subMeal;
-
                     const aiDay = newMenuFromAI[dIdx];
                     const aiMeal = aiDay?.meals?.[mIdx];
                     const aiSubMeal = aiMeal?.subMeals?.[sIdx];
-
                     if (aiSubMeal && aiSubMeal.dish) {
                          return { 
                              ...subMeal, 
-                             dish: {
-                                 ...aiSubMeal.dish,
-                                 id: Date.now().toString() + Math.random() 
-                             }
+                             dish: { ...aiSubMeal.dish, id: Date.now().toString() + Math.random() }
                          };
                     }
                     return subMeal;
                 })
             }))
         }));
-
         setWeekMenu(mergedMenu);
         setAppliedRuleNames(ruleNames);
         setIsGenerateModalOpen(false);
@@ -309,9 +395,7 @@ function App() {
     }
   };
 
-  const handleViewRecipe = (dish: Dish) => {
-    setViewingDish(dish);
-  };
+  const handleViewRecipe = (dish: Dish) => { setViewingDish(dish); };
 
   const handleAddSubMeal = (dayIndex: number, mealIndex: number, name: string) => {
     setWeekMenu(prevMenu => {
@@ -323,7 +407,6 @@ function App() {
         });
         return newMenu;
     });
-    
     const isTranslatedDefault = DEFAULT_SECTION_SUGGESTIONS.some(key => t(key) === name);
     if (!isTranslatedDefault && !subMealNameHistory.includes(name)) {
         setSubMealNameHistory(prev => [...prev, name]);
@@ -334,7 +417,6 @@ function App() {
   const handleAddMeal = (dayIndex: number, name: string) => {
       const standardKey = STANDARD_MEAL_KEYS.find(k => t(k).toLowerCase() === name.toLowerCase());
       const finalName = standardKey || name;
-
       setWeekMenu(prevMenu => {
           const newMenu = JSON.parse(JSON.stringify(prevMenu));
           newMenu[dayIndex].meals.push({
@@ -350,15 +432,12 @@ function App() {
       setWeekMenu(prevMenu => {
           const newMenu = JSON.parse(JSON.stringify(prevMenu));
           const subMeal = newMenu[dayIndex].meals[mealIndex].subMeals.find((sm: any) => sm.id === subMealId);
-          if (subMeal) {
-              subMeal.name = newName;
-          }
+          if (subMeal) subMeal.name = newName;
           return newMenu;
       });
-      
       const isTranslatedDefault = DEFAULT_SECTION_SUGGESTIONS.some(key => t(key) === newName);
       if (newName.trim() && !isTranslatedDefault && !subMealNameHistory.includes(newName)) {
-          setSubMealNameHistory(prev => [...prev, newName]);
+          setSubMealNameHistory(prev => [...prev, name]);
       }
   };
   
@@ -376,9 +455,7 @@ function App() {
   const handleRemoveMeal = (dayIndex: number, mealIndex: number) => {
       setWeekMenu(prevMenu => {
           const newMenu = JSON.parse(JSON.stringify(prevMenu));
-          if (newMenu[dayIndex] && newMenu[dayIndex].meals) {
-              newMenu[dayIndex].meals.splice(mealIndex, 1);
-          }
+          if (newMenu[dayIndex] && newMenu[dayIndex].meals) newMenu[dayIndex].meals.splice(mealIndex, 1);
           return newMenu;
       });
   };
@@ -388,7 +465,6 @@ function App() {
           const newMenu = JSON.parse(JSON.stringify(prevMenu));
           const meals = newMenu[dayIndex].meals;
           const targetIndex = direction === 'up' ? mealIndex - 1 : mealIndex + 1;
-          
           if (targetIndex >= 0 && targetIndex < meals.length) {
               [meals[mealIndex], meals[targetIndex]] = [meals[targetIndex], meals[mealIndex]];
           }
@@ -401,7 +477,6 @@ function App() {
           const newMenu = JSON.parse(JSON.stringify(prevMenu));
           const subMeals = newMenu[dayIndex].meals[mealIndex].subMeals;
           const targetIndex = direction === 'up' ? subMealIndex - 1 : subMealIndex + 1;
-          
           if (targetIndex >= 0 && targetIndex < subMeals.length) {
               [subMeals[subMealIndex], subMeals[targetIndex]] = [subMeals[targetIndex], subMeals[subMealIndex]];
           }
@@ -430,147 +505,73 @@ function App() {
     });
   };
 
-  const isRecipeSaved = (dish: Dish): boolean => {
-    return recipeBook.some(r => r.name.toLowerCase() === dish.name.toLowerCase());
-  };
-  
-  const getMealIdentifier = () => {
-    if (!selectedSlot) return null;
-    const day = weekMenu[selectedSlot.dayIndex];
-    const meal = day.meals[selectedSlot.mealIndex];
-    const subMeal = meal.subMeals.find(sm => sm.id === selectedSlot.subMealId);
-    return { dayName: t(day.name), mealName: subMeal?.name || t(meal.name) };
-  }
-
-  const handleImportRecipes = (importedRecipes: Dish[]) => {
-      setRecipeBook(currentRecipes => {
-          const currentIds = new Set(currentRecipes.map(r => r.id));
-          const currentNames = new Set(currentRecipes.map(r => r.name.toLowerCase()));
-          
-          const newRecipes = importedRecipes.filter(r => {
-              if (r.id && currentIds.has(r.id)) return false;
-              if (currentNames.has(r.name.toLowerCase())) return false;
-              return true;
-          }).map(r => ({
-              ...r,
-              id: r.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
-          }));
-          
-          const newMap = { ...ingredientStoreMap };
-          newRecipes.forEach(r => {
-              r.ingredients?.forEach(ing => {
-                  if (ing.store && ing.text) {
-                      newMap[ing.text.trim().toLowerCase()] = ing.store;
-                  }
-              });
-          });
-          setIngredientStoreMap(newMap);
-
-          const merged = [...newRecipes, ...currentRecipes];
-          alert(`Imported ${newRecipes.length} new recipes.`);
-          return merged;
-      });
-  }
-
-  const handleImportWeeks = (importedWeeks: SavedWeek[]) => {
-      setSavedWeeks(currentWeeks => {
-          const currentIds = new Set(currentWeeks.map(w => w.id));
-          
-          const newWeeks = importedWeeks.filter(w => {
-              if (currentIds.has(w.id)) return false; 
-              return true;
-          }).map(w => ({
-             ...w,
-             id: currentIds.has(w.id) ? Date.now().toString() + Math.random() : w.id 
-          }));
-
-          const merged = [...newWeeks, ...currentWeeks];
-          alert(`Imported ${newWeeks.length} saved weeks.`);
-          return merged;
-      });
-  };
-
-  const handlePrintClick = (mode: 'week' | 'grocery') => {
-      if (mode === 'week') {
-          setIsPrintWeekModalOpen(true);
-      } else {
-          setIsPrintGroceryModalOpen(true);
-      }
-  };
-
-  const handleSaveWeek = (name: string) => {
-      const newSavedWeek: SavedWeek = {
-          id: Date.now().toString(),
-          name,
-          menu: weekMenu,
-          notes: weekNotes,
-          ruleNames: appliedRuleNames
-      };
-      setSavedWeeks([newSavedWeek, ...savedWeeks]);
-      alert("Week saved successfully!");
-  };
-
-  const handleLoadWeek = (week: SavedWeek) => {
-      setWeekMenu(JSON.parse(JSON.stringify(week.menu)));
-      setWeekNotes(week.notes);
-      setAppliedRuleNames(week.ruleNames);
-      setIsSavedWeeksModalOpen(false);
-  };
-
-  const handleWeekSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const value = e.target.value;
-      const week = savedWeeks.find(w => w.id === value);
-      if (week) {
-          handleLoadWeek(week);
-      }
-      e.target.value = ''; 
-  };
-
-  const handleDeleteWeek = (id: string) => {
-      setSavedWeeks(savedWeeks.filter(w => w.id !== id));
-  };
-
-  const handleToggleGroceryItem = (id: string) => {
-      setCheckedGroceryItems(prev => {
-          const newState = { ...prev };
-          if (newState[id]) {
-              delete newState[id];
-          } else {
-              newState[id] = true;
-          }
-          return newState;
-      });
-  };
-
-  const displayWeekMenu = useMemo(() => weekMenu.map(day => ({
+  const displayWeekMenu = useMemo(() => weekMenu.map((day, idx) => ({
       ...day,
+      originalIndex: idx, // Keep track of position in standard 7-day array
       name: t(day.name),
-      meals: day.meals.map(meal => ({
-          ...meal,
-          name: t(meal.name)
-      }))
+      meals: day.meals.map(meal => ({ ...meal, name: t(meal.name) }))
   })), [weekMenu, t]);
+
+  const onOverwrite = useCallback((id: string) => {
+    setSavedWeeks(prev => prev.map(w => w.id === id ? {
+        ...w,
+        menu: JSON.parse(JSON.stringify(weekMenu)),
+        notes: weekNotes,
+        ruleNames: [...appliedRuleNames]
+    } : w));
+    setActiveWeekId(id);
+    alert(t('save_success') || "Modificaciones guardadas.");
+  }, [weekMenu, weekNotes, appliedRuleNames, t]);
+
+  const handleQuickSave = () => {
+    if (activeWeekId && activeWeekId !== 'default-new-menu') {
+        onOverwrite(activeWeekId);
+    } else {
+        setIsSavedWeeksModalOpen(true);
+    }
+  };
+
+  const toggleLanguage = () => {
+      const langs: AppLanguage[] = ['es', 'en', 'fr'];
+      const currentIndex = langs.indexOf(language);
+      const nextIndex = (currentIndex + 1) % langs.length;
+      setLanguage(langs[nextIndex]);
+  };
+
+  const toggleDayVisibility = (dayKey: string) => {
+    setHiddenDayKeys(prev => {
+        const next = new Set(prev);
+        if (next.has(dayKey)) next.delete(dayKey);
+        else next.add(dayKey);
+        return next;
+    });
+  };
 
   return (
     <>
-        <div className="min-h-screen bg-dark-bg text-dark-text font-sans print:hidden">
+        <div className={`min-h-screen font-sans print:hidden transition-colors duration-300 ${isDarkMode ? 'bg-dark-bg text-dark-text' : 'bg-white text-gray-900'}`}>
             <Header 
                 t={t}
                 language={language}
-                setLanguage={setLanguage}
-                savedWeeks={savedWeeks}
-                handleWeekSelectChange={handleWeekSelectChange}
+                toggleLanguage={toggleLanguage}
+                activeWeekId={activeWeekId}
+                handleQuickSave={handleQuickSave}
                 setIsSavedWeeksModalOpen={setIsSavedWeeksModalOpen}
                 setIsGroceryListOpen={setIsGroceryListOpen}
                 setIsGenerateModalOpen={setIsGenerateModalOpen}
                 handlePrintClick={handlePrintClick}
+                handleScreenshot={handleScreenshot}
                 currentView={currentView}
                 setCurrentView={setCurrentView}
+                isDarkMode={isDarkMode}
+                toggleTheme={() => setIsDarkMode(!isDarkMode)}
             />
 
-          <main className="container mx-auto" id="main-content">
+          <main className="w-full" id="main-content">
             {currentView === 'planner' && <WeekView 
                 weekMenu={displayWeekMenu} 
+                hiddenDayKeys={hiddenDayKeys}
+                onToggleDayVisibility={toggleDayVisibility}
                 onSelectSlot={handleSelectSlot} 
                 onViewRecipe={handleViewRecipe}
                 onAddSubMeal={(dayIndex, mealIndex) => setAddingSubMealTo({dayIndex, mealIndex})}
@@ -585,32 +586,40 @@ function App() {
                 setWeekNotes={setWeekNotes}
                 appliedRuleNames={appliedRuleNames}
                 t={t}
+                isDarkMode={isDarkMode}
+                activeWeekName={activeWeekName}
             />}
-            {currentView === 'recipes' && <RecipeBookView 
-                recipes={recipeBook} 
-                onAddRecipe={handleSaveRecipe} 
-                onUpdateRecipe={handleUpdateRecipe} 
-                onImportRecipes={handleImportRecipes}
-                editingRecipe={editingRecipe}
-                setEditingRecipe={setEditingRecipe}
-                categories={currentDishCategories}
-                onAddCategory={handleAddDishCategory}
-                onDeleteCategory={handleDeleteDishCategory}
-                t={t}
-                ingredientStoreMap={ingredientStoreMap}
-            />}
-            {currentView === 'rules' && <RulesView 
-                rules={savedRules}
-                categories={ruleCategories}
-                onAddRule={handleAddRule}
-                onUpdateRule={handleUpdateRule}
-                onDeleteRule={handleDeleteRule}
-                onAddCategory={handleAddCategory}
-                onUpdateCategory={handleUpdateCategory}
-                onDeleteCategory={handleDeleteCategory}
-                onImportRules={handleImportRules}
-                t={t}
-            />}
+            {currentView === 'recipes' && <div className="container mx-auto">
+                <RecipeBookView 
+                    recipes={recipeBook} 
+                    onAddRecipe={handleSaveRecipe} 
+                    onUpdateRecipe={handleUpdateRecipe} 
+                    onImportRecipes={handleImportRecipes}
+                    editingRecipe={editingRecipe}
+                    setEditingRecipe={setEditingRecipe}
+                    categories={currentDishCategories}
+                    onAddCategory={handleAddDishCategory}
+                    onDeleteCategory={handleDeleteDishCategory}
+                    t={t}
+                    ingredientStoreMap={ingredientStoreMap}
+                    isDarkMode={isDarkMode}
+                />
+            </div>}
+            {currentView === 'rules' && <div className="container mx-auto">
+                <RulesView 
+                    rules={savedRules}
+                    categories={ruleCategories}
+                    onAddRule={handleAddRule}
+                    onUpdateRule={handleUpdateRule}
+                    onDeleteRule={handleDeleteRule}
+                    onAddCategory={handleAddCategory}
+                    onUpdateCategory={handleUpdateCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    onImportRules={handleImportRules}
+                    t={t}
+                    isDarkMode={isDarkMode}
+                />
+            </div>}
           </main>
           
           <DishSelector
@@ -618,7 +627,13 @@ function App() {
             onClose={handleCloseModal}
             onSelectDish={handleAssignDish}
             onSaveRecipe={handleSaveRecipe}
-            mealIdentifier={getMealIdentifier()}
+            mealIdentifier={(() => {
+                if (!selectedSlot) return null;
+                const day = weekMenu[selectedSlot.dayIndex];
+                const meal = day.meals[selectedSlot.mealIndex];
+                const subMeal = meal.subMeals.find(sm => sm.id === selectedSlot.subMealId);
+                return { dayName: t(day.name), mealName: subMeal?.name || t(meal.name) };
+            })()}
             recipeBook={recipeBook}
             categories={currentDishCategories}
             savedRules={savedRules}
@@ -626,7 +641,8 @@ function App() {
             language={language}
             ingredientStoreMap={ingredientStoreMap}
             onAddCategory={handleAddDishCategory}
-            onDeleteCategory={handleDeleteDishCategory}
+            onDeleteCategory={handleDeleteCategory}
+            isDarkMode={isDarkMode}
           />
 
           <GroceryListView 
@@ -638,6 +654,7 @@ function App() {
             t={t}
             checkedItems={checkedGroceryItems}
             onToggleItem={handleToggleGroceryItem}
+            isDarkMode={isDarkMode}
           />
 
           <GenerateWeekModal
@@ -648,6 +665,7 @@ function App() {
             savedRules={savedRules}
             ruleCategories={ruleCategories}
             t={t}
+            isDarkMode={isDarkMode}
           />
 
           <RecipeDetailModal
@@ -655,21 +673,21 @@ function App() {
             onClose={() => setViewingDish(null)}
             dish={viewingDish}
             onSaveRecipe={handleSaveRecipe}
-            isRecipeSaved={viewingDish ? isRecipeSaved(viewingDish) : false}
+            isRecipeSaved={viewingDish ? recipeBook.some(r => r.name.toLowerCase() === viewingDish.name.toLowerCase()) : false}
             onEditRecipe={handleEditFromDetailModal}
             t={t}
+            isDarkMode={isDarkMode}
           />
 
           <SubMealNameModal
             isOpen={!!addingSubMealTo}
             onClose={() => setAddingSubMealTo(null)}
             onConfirm={(name) => {
-                if (addingSubMealTo) {
-                    handleAddSubMeal(addingSubMealTo.dayIndex, addingSubMealTo.mealIndex, name)
-                }
+                if (addingSubMealTo) handleAddSubMeal(addingSubMealTo.dayIndex, addingSubMealTo.mealIndex, name)
             }}
             history={currentSectionSuggestions}
             t={t}
+            isDarkMode={isDarkMode}
           />
 
           <MealNameModal
@@ -678,15 +696,17 @@ function App() {
             onConfirm={(name) => handleAddMeal(addingMealTo!.dayIndex, name)}
             suggestions={mealSuggestions}
             t={t}
+            isDarkMode={isDarkMode}
           />
 
           <PrintWeekModal
             isOpen={isPrintWeekModalOpen}
             onClose={() => setIsPrintWeekModalOpen(false)}
-            weekMenu={displayWeekMenu}
+            weekMenu={displayWeekMenu.filter(day => !hiddenDayKeys.has(DAYS_OF_WEEK_KEYS[day.originalIndex]))}
             t={t}
             weekNotes={weekNotes}
             appliedRuleNames={appliedRuleNames}
+            isDarkMode={isDarkMode}
           />
 
           <PrintGroceryModal 
@@ -696,17 +716,43 @@ function App() {
             t={t}
             ingredientStoreMap={ingredientStoreMap}
             checkedItems={checkedGroceryItems}
+            isDarkMode={isDarkMode}
           />
 
           <SavedWeeksModal
             isOpen={isSavedWeeksModalOpen}
             onClose={() => setIsSavedWeeksModalOpen(false)}
             savedWeeks={savedWeeks}
-            onSave={handleSaveWeek}
-            onLoad={handleLoadWeek}
-            onDelete={handleDeleteWeek}
-            onImport={handleImportWeeks}
+            activeWeekId={activeWeekId}
+            onSave={(name) => {
+                const newId = Date.now().toString();
+                const newSavedWeek: SavedWeek = {
+                    id: newId,
+                    name,
+                    menu: JSON.parse(JSON.stringify(weekMenu)),
+                    notes: weekNotes,
+                    ruleNames: [...appliedRuleNames]
+                };
+                setSavedWeeks([newSavedWeek, ...savedWeeks]);
+                setActiveWeekId(newId);
+                alert(t('save_success') || "Menu guardado.");
+            }}
+            onLoad={(week) => {
+                setWeekMenu(JSON.parse(JSON.stringify(week.menu)));
+                setWeekNotes(week.notes);
+                setAppliedRuleNames([...week.ruleNames]);
+                setActiveWeekId(week.id);
+                setIsSavedWeeksModalOpen(false);
+                setHiddenDayKeys(new Set()); 
+            }}
+            onOverwrite={onOverwrite}
+            onDelete={(id) => {
+                setSavedWeeks(savedWeeks.filter(w => w.id !== id));
+                if (activeWeekId === id) setActiveWeekId(null);
+            }}
+            onImport={(weeks) => setSavedWeeks(prev => [...weeks, ...prev])}
             t={t}
+            isDarkMode={isDarkMode}
           />
         </div>
     </>

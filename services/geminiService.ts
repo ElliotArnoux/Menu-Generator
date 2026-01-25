@@ -71,8 +71,9 @@ export const getMealSuggestions = async (
 
     IMPORTANT: The output JSON must be in ${langName}.`;
 
+    // Fix: Updated model to 'gemini-3-flash-preview' for basic text tasks
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -80,6 +81,7 @@ export const getMealSuggestions = async (
       },
     });
 
+    // Fix: Accessing .text property directly (not as a function)
     const jsonText = response.text.trim();
     const suggestions = JSON.parse(jsonText) as Dish[];
     return suggestions;
@@ -206,8 +208,9 @@ Output as valid JSON array strictly adhering to schema.
 EXTREMELY IMPORTANT: The content (Dish names, descriptions, ingredients) MUST BE IN ${langName}.
 `;
 
+        // Fix: Updated model to 'gemini-3-pro-preview' for complex planning tasks
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-pro-preview',
             contents: prompt,
             config: {
               responseMimeType: 'application/json',
@@ -215,6 +218,7 @@ EXTREMELY IMPORTANT: The content (Dish names, descriptions, ingredients) MUST BE
             },
         });
 
+        // Fix: Accessing .text property directly (not as a function)
         const jsonText = response.text.trim();
         const generatedMenu = JSON.parse(jsonText);
 

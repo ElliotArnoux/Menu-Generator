@@ -15,34 +15,38 @@ interface MealSlotProps {
   onRemoveSubMeal: (dayIndex: number, mealIndex: number, subMealId: string) => void;
   onRemoveDish: (dayIndex: number, mealIndex: number, subMealId: string) => void;
   onRemoveMeal: (dayIndex: number, mealIndex: number) => void;
+  onAddMeal: (dayIndex: number) => void;
   onMoveMeal: (dayIndex: number, mealIndex: number, direction: 'up' | 'down') => void;
   onMoveSubMeal: (dayIndex: number, mealIndex: number, subMealIndex: number, direction: 'up' | 'down') => void;
   isFirst: boolean;
   isLast: boolean;
   t: (key: string) => string;
   isPrint?: boolean;
+  isDarkMode: boolean;
 }
 
 const MealSlot: React.FC<MealSlotProps> = ({ 
     meal, dayIndex, mealIndex, onSelectSlot, onViewRecipe,
     onAddSubMeal, onRenameSubMeal, onRemoveSubMeal, onRemoveDish, onRemoveMeal, 
-    onMoveMeal, onMoveSubMeal, isFirst, isLast, t, isPrint = false
+    onMoveMeal, onMoveSubMeal, isFirst, isLast, t, isPrint = false, isDarkMode
 }) => {
+
+  const labelClass = `font-bold uppercase tracking-wider ${isPrint ? 'text-[8px]' : 'text-10px md:text-xs'} ${isDarkMode ? 'text-dark-text-secondary' : 'text-gray-500'}`;
 
   return (
     <div className={`flex flex-col gap-1 min-h-[80px] lg:min-h-[100px] h-full ${isPrint ? 'p-0.5' : 'p-1 md:p-2'}`}>
       <div className="flex justify-between items-center px-1 flex-shrink-0">
           <div className="flex items-center gap-1">
-             <h4 className={`font-bold text-dark-text-secondary uppercase tracking-wider ${isPrint ? 'text-[8px]' : 'text-10px md:text-xs'}`}>{meal.name}</h4>
+             <h4 className={labelClass}>{meal.name}</h4>
              {!isPrint && (
-                 <div className="flex flex-col ml-1">
+                 <div className="flex flex-col ml-1" data-html2canvas-ignore>
                      {!isFirst && (
-                        <button onClick={() => onMoveMeal(dayIndex, mealIndex, 'up')} className="text-dark-text-secondary hover:text-brand-light p-0.5">
+                        <button onClick={() => onMoveMeal(dayIndex, mealIndex, 'up')} className={`${isDarkMode ? 'text-dark-text-secondary hover:text-brand-light' : 'text-gray-400 hover:text-brand-primary'} p-0.5`}>
                             <ChevronUpIcon className="h-2 w-2 md:h-2.5 md:w-2.5" />
                         </button>
                      )}
                      {!isLast && (
-                        <button onClick={() => onMoveMeal(dayIndex, mealIndex, 'down')} className="text-dark-text-secondary hover:text-brand-light p-0.5">
+                        <button onClick={() => onMoveMeal(dayIndex, mealIndex, 'down')} className={`${isDarkMode ? 'text-dark-text-secondary hover:text-brand-light' : 'text-gray-400 hover:text-brand-primary'} p-0.5`}>
                             <ChevronDownIcon className="h-2 w-2 md:h-2.5 md:w-2.5" />
                         </button>
                      )}
@@ -50,17 +54,17 @@ const MealSlot: React.FC<MealSlotProps> = ({
              )}
           </div>
           {!isPrint && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1" data-html2canvas-ignore>
                   <button
                     onClick={() => onRemoveMeal(dayIndex, mealIndex)}
-                    className="text-dark-text-secondary hover:text-red-400 transition-colors p-0.5"
+                    className={`${isDarkMode ? 'text-dark-text-secondary hover:text-red-400' : 'text-gray-400 hover:text-red-500'} transition-colors p-0.5`}
                     title="Eliminar sección"
                   >
                     <Trash2Icon className="h-3 w-3" />
                   </button>
                   <button
                     onClick={() => onAddSubMeal(dayIndex, mealIndex)}
-                    className="text-dark-text-secondary hover:text-brand-light transition-colors p-0.5"
+                    className={`${isDarkMode ? 'text-dark-text-secondary hover:text-brand-light' : 'text-gray-400 hover:text-brand-primary'} transition-colors p-0.5`}
                     title="Añadir sub-sección"
                   >
                     <PlusIcon className="h-3 w-3" />
@@ -90,6 +94,7 @@ const MealSlot: React.FC<MealSlotProps> = ({
                     canRemove={meal.subMeals.length > 1}
                     t={t}
                     isPrint={isPrint}
+                    isDarkMode={isDarkMode}
                 />
             </div>
         ))}

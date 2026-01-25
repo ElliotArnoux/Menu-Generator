@@ -69,6 +69,8 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
 
     // Actions
     'save': { es: 'Guardar', en: 'Save', fr: 'Enregistrer' },
+    'save_success': { es: 'Modificaciones guardadas con éxito.', en: 'Changes saved successfully.', fr: 'Modifications enregistrées avec succès.' },
+    'overwrite': { es: 'Sobrescribir', en: 'Overwrite', fr: 'Écraser' },
     'cancel': { es: 'Cancelar', en: 'Cancel', fr: 'Annuler' },
     'edit': { es: 'Editar', en: 'Edit', fr: 'Modifier' },
     'delete': { es: 'Eliminar', en: 'Delete', fr: 'Supprimer' },
@@ -86,6 +88,7 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'confirm_clear_week': { es: '¿Estás seguro de que quieres borrar todo el menú de la semana?', en: 'Are you sure you want to clear the entire week menu?', fr: 'Êtes-vous sûr de vouloir effacer tout le menu de la semana ?' },
     'import_week': { es: 'Importar Semana', en: 'Import Week', fr: 'Importer Semaine' },
     'export_week': { es: 'Exportar Semana', en: 'Export Week', fr: 'Exporter Semaine' },
+    'overwrite_confirm': { es: '¿Sobrescribir este menú con los cambios actuales?', en: 'Overwrite this menu with current changes?', fr: 'Écraser ce menu avec les changements actuels ?' },
 
     // Dish Selector
     'free_text': { es: 'Texto Libre', en: 'Free Text', fr: 'Texte Libre' },
@@ -93,7 +96,7 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'add_free_text': { es: 'Añadir Texto', en: 'Add Text', fr: 'Ajouter Texte' },
     'ai_custom_prompt': { es: 'Instrucción personalizada (opcional)', en: 'Custom prompt (optional)', fr: 'Instruction personnalisée (optionnel)' },
     'ai_custom_placeholder': { es: 'Ej: Algo con pollo...', en: 'Ex: Something with chicken...', fr: 'Ex: Quelque chose avec du poulet...' },
-    'select_rules_optional': { es: 'Aplicar reglas (opcional)', en: 'Apply rules (optional)', fr: 'Appliquer des règles (optionnel)' },
+    'select_rules_optional': { es: 'Aplicar reglas (opcional)', en: 'Apply rules (optional)', fr: 'Appliquer des reglas (optionnel)' },
 
     // Default Categories (Legacy & New Keys)
     'Meat': { es: 'Carne', en: 'Meat', fr: 'Viande' },

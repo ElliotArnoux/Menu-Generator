@@ -90,8 +90,8 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
     : `text-[10px] md:text-xs font-semibold transition-colors truncate ${isDarkMode ? 'text-dark-text-secondary group-hover:text-dark-text' : 'text-gray-500 group-hover:text-gray-900'}`;
 
   const dishNameClasses = isPrint
-    ? "font-bold text-brand-light text-[9px] line-clamp-2 leading-tight w-full"
-    : `font-semibold text-xs line-clamp-2 max-w-full ${isDarkMode ? 'text-brand-light' : 'text-brand-secondary'}`;
+    ? "font-bold text-brand-light text-[10.5px] line-clamp-2 leading-tight w-full"
+    : `font-semibold text-sm line-clamp-2 max-w-full ${isDarkMode ? 'text-brand-light' : 'text-brand-secondary'}`;
 
   const cardClasses = isPrint
     ? `flex-1 flex flex-col h-full p-1 rounded-sm text-left overflow-hidden justify-center bg-transparent`

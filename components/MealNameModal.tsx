@@ -8,9 +8,10 @@ interface MealNameModalProps {
   onConfirm: (name: string) => void;
   suggestions: string[];
   t: (key: string) => string;
+  isDarkMode: boolean;
 }
 
-const MealNameModal: React.FC<MealNameModalProps> = ({ isOpen, onClose, onConfirm, suggestions, t }) => {
+const MealNameModal: React.FC<MealNameModalProps> = ({ isOpen, onClose, onConfirm, suggestions, t, isDarkMode }) => {
   const [customName, setCustomName] = useState('');
   const [showCustom, setShowCustom] = useState(false);
 

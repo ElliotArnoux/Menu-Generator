@@ -235,7 +235,7 @@ function App() {
                 if (container) {
                     container.style.height = 'auto';
                     container.style.minHeight = 'auto';
-                    container.style.width = '1800px'; // Increase width to handle 7 days comfortably
+                    container.style.width = '1800px'; 
                     container.style.overflow = 'visible';
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
@@ -426,7 +426,7 @@ function App() {
       });
       const isTranslatedDefault = DEFAULT_SECTION_SUGGESTIONS.some(key => t(key) === newName);
       if (newName.trim() && !isTranslatedDefault && !subMealNameHistory.includes(newName)) {
-          setSubMealNameHistory(prev => [...prev, name]);
+          setSubMealNameHistory(prev => [...prev, newName]);
       }
   };
   

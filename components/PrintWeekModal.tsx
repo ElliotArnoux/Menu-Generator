@@ -11,10 +11,11 @@ interface PrintWeekModalProps {
   t: (key: string) => string;
   weekNotes: string;
   appliedRuleNames: string[];
+  isDarkMode: boolean;
 }
 
 const PrintWeekModal: React.FC<PrintWeekModalProps> = ({ 
-    isOpen, onClose, weekMenu, t, weekNotes, appliedRuleNames
+    isOpen, onClose, weekMenu, t, weekNotes, isDarkMode
 }) => {
   const [imgData, setImgData] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

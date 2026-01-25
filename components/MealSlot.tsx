@@ -27,7 +27,7 @@ interface MealSlotProps {
 
 const MealSlot: React.FC<MealSlotProps> = ({ 
     meal, dayIndex, mealIndex, onSelectSlot, onViewRecipe,
-    onAddSubMeal, onRenameSubMeal, onRemoveSubMeal, onRemoveDish, onRemoveMeal, 
+    onAddSubMeal, onRenameSubMeal, onRemoveSubMeal, onRemoveDish, onRemoveMeal, onAddMeal,
     onMoveMeal, onMoveSubMeal, isFirst, isLast, t, isPrint = false, isDarkMode
 }) => {
 

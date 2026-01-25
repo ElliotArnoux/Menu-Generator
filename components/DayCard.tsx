@@ -76,6 +76,7 @@ const DayCard: React.FC<DayCardProps> = ({
                     onRemoveSubMeal={onRemoveSubMeal}
                     onRemoveDish={onRemoveDish}
                     onRemoveMeal={onRemoveMeal}
+                    onAddMeal={onAddMeal}
                     onMoveMeal={onMoveMeal}
                     onMoveSubMeal={onMoveSubMeal}
                     isFirst={mealIndex === 0}

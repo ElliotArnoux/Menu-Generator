@@ -15,11 +15,12 @@ interface RulesViewProps {
     onDeleteCategory: (id: string) => void;
     onImportRules: (data: { rules: SavedRule[], categories: RuleCategory[] }) => void;
     t: (key: string) => string;
+    isDarkMode: boolean;
 }
 
 const RulesView: React.FC<RulesViewProps> = ({
     rules, categories, onAddRule, onUpdateRule, onDeleteRule,
-    onAddCategory, onUpdateCategory, onDeleteCategory, onImportRules, t
+    onAddCategory, onUpdateCategory, onDeleteCategory, onImportRules, t, isDarkMode
 }) => {
     const [activeCategoryId, setActiveCategoryId] = useState<string>('ALL');
     

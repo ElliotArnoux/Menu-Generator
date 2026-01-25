@@ -8,7 +8,7 @@ import { downloadJson, readJsonFile } from '../fileUtils';
 
 interface RecipeBookViewProps {
   recipes: Dish[];
-  onAddRecipe: (dish: Omit<Dish, 'id'>) => void;
+  onAddRecipe: (dish: Omit<Dish, 'id'> | Dish) => void;
   onUpdateRecipe: (dish: Dish) => void;
   onImportRecipes: (recipes: Dish[]) => void;
   editingRecipe: Dish | null;
@@ -18,12 +18,13 @@ interface RecipeBookViewProps {
   onDeleteCategory: (name: string) => void;
   t: (key: string) => string;
   ingredientStoreMap: Record<string, string>;
+  isDarkMode: boolean;
 }
 
 const RecipeBookView: React.FC<RecipeBookViewProps> = ({ 
     recipes, onAddRecipe, onUpdateRecipe, onImportRecipes, 
     editingRecipe, setEditingRecipe, categories, onAddCategory, onDeleteCategory, t,
-    ingredientStoreMap
+    ingredientStoreMap, isDarkMode
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);

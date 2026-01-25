@@ -7,13 +7,14 @@ interface RecipeDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   dish: Dish | null;
-  onSaveRecipe: (dish: Dish) => void;
+  onSaveRecipe: (dish: Dish | Omit<Dish, 'id'>) => void;
   isRecipeSaved: boolean;
   onEditRecipe: (dish: Dish) => void;
   t: (key: string) => string;
+  isDarkMode: boolean;
 }
 
-const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ isOpen, onClose, dish, onSaveRecipe, isRecipeSaved, onEditRecipe, t }) => {
+const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ isOpen, onClose, dish, onSaveRecipe, isRecipeSaved, onEditRecipe, t, isDarkMode }) => {
   if (!isOpen || !dish) return null;
 
   return (

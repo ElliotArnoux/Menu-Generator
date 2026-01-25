@@ -11,10 +11,11 @@ interface GenerateWeekModalProps {
   savedRules: SavedRule[];
   ruleCategories: RuleCategory[];
   t: (key: string) => string;
+  isDarkMode: boolean;
 }
 
 const GenerateWeekModal: React.FC<GenerateWeekModalProps> = ({ 
-    isOpen, onClose, onGenerate, isLoading, savedRules, ruleCategories, t 
+    isOpen, onClose, onGenerate, isLoading, savedRules, ruleCategories, t, isDarkMode 
 }) => {
   const [customRules, setCustomRules] = useState('');
   const [selectedRuleIds, setSelectedRuleIds] = useState<Set<string>>(new Set());

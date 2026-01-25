@@ -8,9 +8,10 @@ interface SubMealNameModalProps {
   onConfirm: (name: string) => void;
   history: string[];
   t: (key: string) => string;
+  isDarkMode: boolean;
 }
 
-const SubMealNameModal: React.FC<SubMealNameModalProps> = ({ isOpen, onClose, onConfirm, history, t }) => {
+const SubMealNameModal: React.FC<SubMealNameModalProps> = ({ isOpen, onClose, onConfirm, history, t, isDarkMode }) => {
   const [name, setName] = useState('');
 
   const handleConfirm = () => {

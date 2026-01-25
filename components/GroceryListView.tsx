@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Day } from '../types';
 import { XIcon, ShoppingCartIcon, PrinterIcon } from './icons';
 import { compileGroceryItems, consolidateGroceryItems } from '../groceryUtils';
@@ -20,10 +20,11 @@ interface GroceryListViewProps {
   t: (key: string) => string;
   checkedItems: Record<string, boolean>;
   onToggleItem: (id: string) => void;
+  isDarkMode: boolean;
 }
 
 const GroceryListView: React.FC<GroceryListViewProps> = ({ 
-    isOpen, onClose, weekMenu, ingredientStoreMap, onPrint, t, checkedItems, onToggleItem 
+    isOpen, onClose, weekMenu, ingredientStoreMap, onPrint, t, checkedItems, onToggleItem, isDarkMode
 }) => {
   // Calculate raw items needed using utility
   const compiledItems = useMemo(() => {

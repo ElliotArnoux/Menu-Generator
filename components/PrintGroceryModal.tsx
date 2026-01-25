@@ -12,10 +12,11 @@ interface PrintGroceryModalProps {
   t: (key: string) => string;
   ingredientStoreMap: Record<string, string>;
   checkedItems: Record<string, boolean>;
+  isDarkMode: boolean;
 }
 
 const PrintGroceryModal: React.FC<PrintGroceryModalProps> = ({ 
-    isOpen, onClose, weekMenu, t, ingredientStoreMap, checkedItems
+    isOpen, onClose, weekMenu, t, ingredientStoreMap, checkedItems, isDarkMode
 }) => {
   const [imgData, setImgData] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

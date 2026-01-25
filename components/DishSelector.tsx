@@ -10,7 +10,7 @@ interface DishSelectorProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectDish: (dish: Dish) => void;
-  onSaveRecipe: (dish: Dish) => void;
+  onSaveRecipe: (dish: Dish | Omit<Dish, 'id'>) => void;
   mealIdentifier: { mealName: string; dayName: string } | null;
   recipeBook: Dish[];
   categories: string[];
@@ -20,11 +20,12 @@ interface DishSelectorProps {
   ingredientStoreMap: Record<string, string>;
   onAddCategory: (name: string) => void;
   onDeleteCategory: (name: string) => void;
+  isDarkMode: boolean;
 }
 
 const DishSelector: React.FC<DishSelectorProps> = ({ 
     isOpen, onClose, onSelectDish, onSaveRecipe, mealIdentifier, recipeBook, 
-    categories, savedRules, t, language, ingredientStoreMap, onAddCategory, onDeleteCategory
+    categories, savedRules, t, language, ingredientStoreMap, onAddCategory, onDeleteCategory, isDarkMode
 }) => {
   const [activeTab, setActiveTab] = useState<'ai' | 'myRecipes' | 'freeText' | 'create'>('myRecipes');
   const [selectedCategory, setSelectedCategory] = useState<string>('Any');

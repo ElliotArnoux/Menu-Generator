@@ -206,6 +206,12 @@ function App() {
       setRecipeBook(prev => [...importedRecipes, ...prev]);
   };
 
+  const handleClearRecipes = () => {
+    if (confirm(t('confirm_clear_recipes'))) {
+      setRecipeBook([]);
+    }
+  };
+
   const handleToggleGroceryItem = (id: string) => {
     setCheckedGroceryItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -584,6 +590,7 @@ function App() {
                     onAddRecipe={handleSaveRecipe} 
                     onUpdateRecipe={handleUpdateRecipe} 
                     onImportRecipes={handleImportRecipes}
+                    onClearRecipes={handleClearRecipes}
                     editingRecipe={editingRecipe}
                     setEditingRecipe={setEditingRecipe}
                     categories={currentDishCategories}

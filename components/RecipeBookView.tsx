@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Dish } from '../types';
 import RecipeCard from './RecipeCard';
 import RecipeForm from './RecipeForm';
-import { DownloadIcon, UploadIcon } from './icons';
+import { DownloadIcon, UploadIcon, Trash2Icon } from './icons';
 import { downloadJson, readJsonFile } from '../fileUtils';
 
 interface RecipeBookViewProps {
@@ -11,6 +11,7 @@ interface RecipeBookViewProps {
   onAddRecipe: (dish: Omit<Dish, 'id'> | Dish) => void;
   onUpdateRecipe: (dish: Dish) => void;
   onImportRecipes: (recipes: Dish[]) => void;
+  onClearRecipes: () => void;
   editingRecipe: Dish | null;
   setEditingRecipe: (dish: Dish | null) => void;
   categories: string[];
@@ -22,7 +23,7 @@ interface RecipeBookViewProps {
 }
 
 const RecipeBookView: React.FC<RecipeBookViewProps> = ({ 
-    recipes, onAddRecipe, onUpdateRecipe, onImportRecipes, 
+    recipes, onAddRecipe, onUpdateRecipe, onImportRecipes, onClearRecipes,
     editingRecipe, setEditingRecipe, categories, onAddCategory, onDeleteCategory, t,
     ingredientStoreMap, isDarkMode
 }) => {
@@ -79,8 +80,17 @@ const RecipeBookView: React.FC<RecipeBookViewProps> = ({
   return (
     <div className="p-4 md:p-6 space-y-8">
       {/* Header Actions */}
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 flex-wrap">
            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
+           
+           <button 
+                onClick={onClearRecipes} 
+                className="flex items-center gap-2 bg-red-900/20 border border-red-500/30 px-3 py-2 rounded-md text-sm font-semibold text-red-400 hover:bg-red-900/40 hover:text-red-300 transition-colors"
+                title={t('confirm_clear_recipes')}
+           >
+               <Trash2Icon className="h-4 w-4" /> {t('delete')} {t('Any')}
+           </button>
+
            <button onClick={handleImportClick} className="flex items-center gap-2 bg-dark-card border border-dark-border px-3 py-2 rounded-md text-sm font-semibold text-dark-text-secondary hover:text-brand-light hover:border-brand-primary transition-colors">
                <UploadIcon className="h-4 w-4" /> {t('import')}
            </button>

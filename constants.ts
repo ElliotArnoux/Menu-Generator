@@ -89,6 +89,8 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'import_week': { es: 'Importar Semana', en: 'Import Week', fr: 'Importer Semaine' },
     'export_week': { es: 'Exportar Semana', en: 'Export Week', fr: 'Exporter Semaine' },
     'overwrite_confirm': { es: '¿Sobrescribir este menú con los cambios actuales?', en: 'Overwrite this menu with current changes?', fr: 'Écraser ce menu avec les changements actuels ?' },
+    'clear_recipes': { es: 'Borrar todas las recetas', en: 'Clear all recipes', fr: 'Effacer toutes les recettes' },
+    'confirm_clear_recipes': { es: '¿Estás seguro de que quieres borrar TODAS tus recetas? Esta acción no se puede deshacer.', en: 'Are you sure you want to delete ALL your recipes? This action cannot be undone.', fr: 'Êtes-vous sûr de vouloir supprimer TOUTES vos recettes ? Cette action est irréversible.' },
 
     // Dish Selector
     'free_text': { es: 'Texto Libre', en: 'Free Text', fr: 'Texte Libre' },
@@ -165,7 +167,7 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'ingredients': { es: 'Ingredientes', en: 'Ingredients', fr: 'Ingrédients' },
     'store': { es: 'Tienda', en: 'Store', fr: 'Magasin' },
     'store_placeholder': { es: 'Tienda (ej: Super, Frutería)', en: 'Store (e.g., Supermarket)', fr: 'Magasin (ex: Supermarché)' },
-    'instructions': { es: 'Instrucciones', en: 'Instructions', fr: 'Instructions' },
+    'instructions': { es: 'Instructions', en: 'Instructions', fr: 'Instructions' },
     'manage_categories': { es: 'Gestionar Categorías', en: 'Manage Categories', fr: 'Gérer les Catégories' },
     'new_category': { es: 'Nueva Categoría', en: 'New Category', fr: 'Nouvelle Catégorie' },
 

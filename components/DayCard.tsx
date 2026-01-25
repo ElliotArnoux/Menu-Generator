@@ -30,9 +30,9 @@ const DayCard: React.FC<DayCardProps> = ({
 }) => {
   const containerClass = isPrint 
     ? "bg-white rounded-none border border-gray-300 h-full flex flex-col overflow-hidden" 
-    : `rounded-xl shadow-lg border flex flex-col h-full overflow-hidden group/day ${isDarkMode ? 'bg-dark-card border-dark-border' : 'bg-white border-gray-200'}`;
+    : `rounded-xl shadow-lg border flex flex-col h-full overflow-hidden group/day bg-transparent ${isDarkMode ? 'border-dark-border' : 'border-gray-200'}`;
 
-  const headerClass = `flex justify-between items-center flex-shrink-0 relative h-10 px-2 ${isPrint ? 'bg-gray-100 text-black' : (isDarkMode ? 'bg-gray-800 text-dark-text' : 'bg-gray-100 text-gray-900')}`;
+  const headerClass = `flex justify-between items-center flex-shrink-0 relative h-10 px-2 border-b bg-transparent ${isPrint ? 'text-black' : (isDarkMode ? 'border-dark-border text-dark-text' : 'border-gray-100 text-gray-900')}`;
 
   return (
     <div className={containerClass}>
@@ -61,10 +61,10 @@ const DayCard: React.FC<DayCardProps> = ({
               </button>
           )}
       </div>
-      <div className={`flex flex-col flex-grow ${isPrint ? '' : 'gap-0'} overflow-y-auto overflow-x-hidden scrollbar-thin`}>
+      <div className={`flex flex-col flex-grow bg-transparent ${isPrint ? '' : 'gap-0'} overflow-y-auto overflow-x-hidden scrollbar-thin`}>
         {day.meals.length > 0 ? (
             day.meals.map((meal, mealIndex) => (
-            <div key={`${meal.name}-${mealIndex}`} className={`border-t first:border-t-0 flex-grow ${isPrint ? 'border-gray-200' : (isDarkMode ? 'border-dark-border' : 'border-gray-100')}`}>
+            <div key={`${meal.name}-${mealIndex}`} className={`border-t first:border-t-0 flex-grow bg-transparent ${isPrint ? 'border-gray-200' : (isDarkMode ? 'border-dark-border' : 'border-gray-100')}`}>
                 <MealSlot
                     meal={meal}
                     dayIndex={dayIndex}
@@ -87,11 +87,11 @@ const DayCard: React.FC<DayCardProps> = ({
             </div>
             ))
         ) : (
-            <div className={`flex flex-col items-center justify-center p-4 text-sm italic min-h-[100px] flex-grow ${isDarkMode ? 'text-dark-text-secondary' : 'text-gray-400'}`}>
+            <div className={`flex flex-col items-center justify-center p-4 text-sm italic min-h-[100px] flex-grow bg-transparent ${isDarkMode ? 'text-dark-text-secondary' : 'text-gray-400'}`}>
                 {!isPrint ? (
                     <button 
                         onClick={() => onAddMeal(dayIndex)}
-                        className={`flex flex-col items-center gap-2 transition-colors p-4 rounded-lg border border-dashed text-xs ${isDarkMode ? 'border-dark-border hover:text-brand-light hover:border-brand-primary' : 'border-gray-200 hover:text-brand-primary hover:border-brand-primary'}`}
+                        className={`flex flex-col items-center gap-2 transition-colors p-4 rounded-lg border border-dashed text-xs bg-transparent ${isDarkMode ? 'border-dark-border hover:text-brand-light hover:border-brand-primary' : 'border-gray-200 hover:text-brand-primary hover:border-brand-primary'}`}
                         data-html2canvas-ignore
                     >
                         <PlusIcon className="h-5 w-5" />

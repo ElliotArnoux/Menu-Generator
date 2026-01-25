@@ -43,10 +43,10 @@ const WeekView: React.FC<WeekViewProps> = ({
     <div id="week-view-container" className={`w-full flex flex-col min-h-[calc(100vh-80px)] ${isPrint ? 'week-view-print' : ''}`}>
       
       {/* Horizontal Days Row - Scrollable on mobile, Grid on desktop */}
-      <div className="flex-grow overflow-x-auto w-full px-2 py-4 scrollbar-thin">
-          <div className="flex gap-4 min-w-max h-full md:grid md:grid-cols-7 lg:grid-cols-7 xl:grid-cols-7 md:min-w-0">
+      <div className="flex-grow overflow-x-auto w-full px-2 py-4 scrollbar-thin bg-transparent">
+          <div className="flex gap-4 min-w-max h-full md:grid md:grid-cols-7 lg:grid-cols-7 xl:grid-cols-7 md:min-w-0 bg-transparent">
               {visibleDays.map((day) => (
-                <div key={day.name} className="w-[300px] md:w-auto h-full flex flex-col">
+                <div key={day.name} className="w-[300px] md:w-auto h-full flex flex-col bg-transparent">
                     <DayCard
                         day={day}
                         dayIndex={day.originalIndex}
@@ -70,11 +70,11 @@ const WeekView: React.FC<WeekViewProps> = ({
               
               {/* Restoration Slot if any hidden */}
               {!isPrint && hiddenKeys.length > 0 && (
-                  <div className="w-[80px] md:w-auto h-full flex items-start justify-center pt-10" data-html2canvas-ignore>
+                  <div className="w-[80px] md:w-auto h-full flex items-start justify-center pt-10 bg-transparent" data-html2canvas-ignore>
                        <div className="relative">
                             <button 
                                 onClick={() => setShowRestoreMenu(!showRestoreMenu)}
-                                className={`p-4 rounded-xl border-2 border-dashed transition-all flex flex-col items-center gap-2 ${isDarkMode ? 'border-dark-border text-dark-text-secondary hover:border-brand-primary hover:text-brand-light bg-dark-card/30' : 'border-gray-200 text-gray-400 hover:border-brand-primary hover:text-brand-primary bg-gray-50'}`}
+                                className={`p-4 rounded-xl border-2 border-dashed transition-all flex flex-col items-center gap-2 ${isDarkMode ? 'border-dark-border text-dark-text-secondary hover:border-brand-primary hover:text-brand-light bg-dark-card/30' : 'border-gray-200 text-gray-400 hover:border-brand-primary hover:text-brand-primary bg-gray-50/50'}`}
                                 title="Restaurar días"
                             >
                                 <PlusIcon className="h-6 w-6" />
@@ -106,12 +106,12 @@ const WeekView: React.FC<WeekViewProps> = ({
       </div>
 
       {/* Very Reduced Height Info Section at Bottom - Full Width */}
-      <div className={`w-full flex-shrink-0 border-t sticky bottom-0 z-10 ${isDarkMode ? 'bg-dark-bg/95 border-dark-border' : 'bg-white/95 border-gray-200 shadow-lg'}`}>
+      <div className={`w-full flex-shrink-0 border-t sticky bottom-0 z-10 ${isDarkMode ? 'bg-dark-bg/80 backdrop-blur-md border-dark-border' : 'bg-white/80 backdrop-blur-md border-gray-200 shadow-lg'}`}>
           <div className="max-w-full flex flex-col md:flex-row h-auto md:h-16 divide-y md:divide-y-0 md:divide-x divide-inherit">
               
               {/* Menu Name & Notes Container */}
-              <div className="flex-1 flex flex-col min-h-[40px]">
-                  <div className="flex items-center justify-between px-3 py-0.5 bg-inherit border-b border-inherit/20">
+              <div className="flex-1 flex flex-col min-h-[40px] bg-transparent">
+                  <div className="flex items-center justify-between px-3 py-0.5 bg-transparent border-b border-inherit/20">
                       <div className="flex items-center gap-2">
                         <BookmarkIcon className="h-3 w-3 text-brand-primary" />
                         <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">{t('notes')}</span>
@@ -125,13 +125,13 @@ const WeekView: React.FC<WeekViewProps> = ({
                       value={weekNotes}
                       onChange={(e) => setWeekNotes(e.target.value)}
                       placeholder={t('week_notes_placeholder')}
-                      className={`w-full h-full px-4 py-0 text-xs md:text-sm outline-none resize-none bg-transparent overflow-y-auto ${isDarkMode ? 'text-dark-text' : 'text-gray-900'}`}
+                      className={`w-full h-full px-4 py-1 text-xs md:text-sm outline-none resize-none bg-transparent overflow-y-auto ${isDarkMode ? 'text-dark-text' : 'text-gray-900'}`}
                   />
               </div>
 
               {/* Rules Container */}
-              <div className="w-full md:w-1/4 flex flex-col min-h-[40px]" data-html2canvas-ignore>
-                  <div className="flex items-center gap-2 px-3 py-0.5 bg-inherit border-b border-inherit/20">
+              <div className="w-full md:w-1/4 flex flex-col min-h-[40px] bg-transparent" data-html2canvas-ignore>
+                  <div className="flex items-center gap-2 px-3 py-0.5 bg-transparent border-b border-inherit/20">
                       <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">{t('applied_rules')}</span>
                   </div>
                   <div className="flex-1 overflow-x-auto overflow-y-hidden px-4 py-1 scrollbar-hide">

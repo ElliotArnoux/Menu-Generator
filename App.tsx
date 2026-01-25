@@ -233,49 +233,38 @@ function App() {
             onclone: (clonedDoc) => {
                 const container = clonedDoc.getElementById('week-view-container');
                 if (container) {
-                    // Reset container styles for a full-width layout
                     container.style.height = 'auto';
                     container.style.minHeight = 'auto';
-                    container.style.width = '1600px'; 
+                    container.style.width = '1800px'; // Increase width to handle 7 days comfortably
                     container.style.overflow = 'visible';
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
 
-                    // Force the days row into a horizontal grid
-                    const daysWrapper = container.querySelector('.flex-grow.overflow-x-auto');
                     const daysGrid = container.querySelector('.flex.gap-4.min-w-max, .md\\:grid-cols-7');
-                    
-                    if (daysWrapper) {
-                        (daysWrapper as HTMLElement).style.overflow = 'visible';
-                    }
-
                     if (daysGrid) {
                         (daysGrid as HTMLElement).style.display = 'grid';
                         (daysGrid as HTMLElement).style.gridTemplateColumns = 'repeat(7, 1fr)';
                         (daysGrid as HTMLElement).style.width = '100%';
-                        (daysGrid as HTMLElement).style.gap = '12px';
-                        (daysGrid as HTMLElement).style.padding = '20px';
+                        (daysGrid as HTMLElement).style.gap = '16px';
+                        (daysGrid as HTMLElement).style.padding = '24px';
                         
-                        // Ensure all cards are visible and sized correctly
                         daysGrid.querySelectorAll('.w-\\[300px\\], md\\:w-auto').forEach(card => {
                             (card as HTMLElement).style.width = '100%';
                             (card as HTMLElement).style.height = 'auto';
                         });
                     }
 
-                    // Move footer to the absolute bottom of the container
                     const footer = container.querySelector('.sticky.bottom-0');
                     if (footer) {
                         (footer as HTMLElement).style.position = 'relative';
                         (footer as HTMLElement).style.bottom = 'auto';
-                        (footer as HTMLElement).style.marginTop = 'auto';
+                        (footer as HTMLElement).style.marginTop = '40px';
                         (footer as HTMLElement).style.boxShadow = 'none';
                         (footer as HTMLElement).style.borderTop = '2px solid #ccc';
+                        (footer as HTMLElement).style.background = isDarkMode ? '#111827' : '#ffffff';
                     }
 
-                    // Force ALL elements to stop truncating text
-                    const elementsWithTruncate = clonedDoc.querySelectorAll('.truncate, .line-clamp-1, .line-clamp-2, .line-clamp-3, .overflow-hidden');
-                    elementsWithTruncate.forEach(el => {
+                    clonedDoc.querySelectorAll('.truncate, .line-clamp-1, .line-clamp-2, .line-clamp-3, .overflow-hidden').forEach(el => {
                         (el as HTMLElement).style.whiteSpace = 'normal';
                         (el as HTMLElement).style.overflow = 'visible';
                         (el as HTMLElement).style.textOverflow = 'clip';

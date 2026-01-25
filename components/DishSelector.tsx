@@ -82,8 +82,7 @@ const DishSelector: React.FC<DishSelectorProps> = ({
 
   const filteredRecipes = useMemo(() => {
     return recipeBook.filter(recipe => {
-      const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesCategory = selectedCategory === 'Any' 
           ? true 
@@ -108,7 +107,6 @@ const DishSelector: React.FC<DishSelectorProps> = ({
       onSelectDish({
           id: Date.now().toString(),
           name: freeText,
-          description: '', 
           ingredients: []
       });
       onClose();

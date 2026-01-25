@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dish } from '../types';
 import { BookmarkIcon } from './icons';
@@ -25,8 +26,7 @@ const DishCard: React.FC<DishCardProps> = ({ dish, onSelect, onSave, isSaved, sa
         onClick={() => onSelect(dish)}
         className="flex-grow bg-dark-card border border-dark-border rounded-lg p-4 text-left transition-all duration-200 hover:bg-gray-700 hover:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
       >
-        <h3 className="font-bold text-dark-text text-lg">{dish.name}</h3>
-        <p className="text-dark-text-secondary text-sm mt-1">{dish.description}</p>
+        <h3 className="font-bold text-dark-text text-lg line-clamp-2">{dish.name}</h3>
       </button>
       {onSave && (
         <button 

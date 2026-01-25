@@ -90,23 +90,17 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
     : `text-[10px] md:text-xs font-semibold transition-colors truncate ${isDarkMode ? 'text-dark-text-secondary group-hover:text-dark-text' : 'text-gray-500 group-hover:text-gray-900'}`;
 
   const dishNameClasses = isPrint
-    ? "font-bold text-brand-light text-[9px] truncate leading-tight w-full"
-    : `font-semibold text-xs truncate max-w-full ${isDarkMode ? 'text-brand-light' : 'text-brand-secondary'}`;
+    ? "font-bold text-brand-light text-[9px] line-clamp-2 leading-tight w-full"
+    : `font-semibold text-xs line-clamp-2 max-w-full ${isDarkMode ? 'text-brand-light' : 'text-brand-secondary'}`;
 
-  const dishDescClasses = isPrint
-    ? "hidden"
-    : `text-[9px] md:text-[10px] leading-tight line-clamp-2 md:line-clamp-3 overflow-hidden text-ellipsis ${isDarkMode ? 'text-dark-text-secondary' : 'text-gray-500'}`;
-
-  // Removed solid backgrounds, replaced with bg-transparent and subtle border on hover
   const cardClasses = isPrint
     ? `flex-1 flex flex-col h-full p-1 rounded-sm text-left overflow-hidden justify-center bg-transparent`
     : `flex-1 flex flex-col min-h-[50px] p-1.5 md:p-2 rounded-md text-left transition overflow-hidden relative group/card bg-transparent border border-transparent hover:border-brand-primary/30`;
   
   const cardContentClasses = isPrint
     ? "flex flex-col items-start gap-0.5 w-full"
-    : "flex items-center gap-1 mb-0.5 flex-wrap w-full";
+    : "flex items-start gap-1 mb-0.5 flex-wrap w-full";
 
-  // Updated empty classes to be bg-transparent
   const emptyClasses = `flex-1 w-full flex items-center justify-center gap-1 text-center border border-dashed rounded-md transition-colors ${isPrint ? 'p-0.5 min-h-[15px]' : 'p-1 min-h-[30px]'} ${isDarkMode ? 'bg-transparent border-dark-border text-dark-text-secondary hover:border-brand-primary hover:text-brand-light' : 'bg-transparent border-gray-200 text-gray-400 hover:border-brand-primary hover:text-brand-primary'}`;
 
   return (
@@ -170,14 +164,14 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
               <div className={cardContentClasses}>
                   <span className={dishNameClasses}>{subMeal.dish.name}</span>
                   {!isPrint && (
-                    <div className="flex flex-wrap gap-0.5" data-html2canvas-ignore>
+                    <div className="flex flex-wrap gap-0.5 mt-0.5" data-html2canvas-ignore>
                         {dishCategories.map(cat => {
                             const colors = getCategoryColor(cat);
                             return (
                                 <span 
                                     key={cat} 
                                     style={{ backgroundColor: colors.bg, color: colors.text }}
-                                    className="text-[8px] md:text-[9px] font-bold px-1 rounded-full whitespace-nowrap flex-shrink-0"
+                                    className="inline-flex items-center justify-center text-[8px] md:text-[9px] font-bold px-1.5 h-3.5 md:h-4 rounded-full whitespace-nowrap flex-shrink-0 leading-none"
                                 >
                                     {t(cat)}
                                 </span>
@@ -186,9 +180,6 @@ const SubMealSlot: React.FC<SubMealSlotProps> = ({
                     </div>
                   )}
               </div>
-              <p className={dishDescClasses}>
-                  {subMeal.dish.description}
-              </p>
             </div>
             {!isPrint && (
                 <button onClick={handleViewClick} className={`self-center p-1 rounded-md transition flex-shrink-0 ${isDarkMode ? 'bg-dark-card/50 text-dark-text-secondary hover:bg-dark-card hover:text-brand-light' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-brand-primary'}`} aria-label="Ver receta" data-html2canvas-ignore>

@@ -25,7 +25,6 @@ const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ isOpen, onClose, 
             <BookOpenIcon className="h-6 w-6 text-brand-light" />
             <div>
               <h2 className="text-xl font-bold text-dark-text">{dish.name}</h2>
-              <p className="text-sm text-dark-text-secondary">{dish.description}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-dark-card transition-colors">

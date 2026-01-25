@@ -13,7 +13,7 @@ export interface Ingredient {
 export interface Dish {
     id?: string;
     name: string;
-    description: string;
+    description?: string;
     categories?: string[];
     ingredients?: Ingredient[];
     instructions?: string;

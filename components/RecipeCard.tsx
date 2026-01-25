@@ -26,7 +26,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ dish, onEdit, t }) => {
     <div className="bg-dark-card rounded-xl shadow-lg overflow-hidden border border-dark-border transition-all duration-300 flex flex-col">
       <div className="p-4 flex-grow">
         <div className="flex justify-between items-start mb-2">
-            <h3 className="font-bold text-dark-text text-xl">{dish.name}</h3>
+            <h3 className="font-bold text-dark-text text-xl line-clamp-2">{dish.name}</h3>
         </div>
         <div className="flex flex-wrap gap-1 mb-2">
             {displayCategories.map(cat => {
@@ -42,7 +42,6 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ dish, onEdit, t }) => {
                 );
             })}
         </div>
-        <p className="text-dark-text-secondary text-sm mt-1">{dish.description}</p>
       </div>
       {(dish.ingredients?.length || dish.instructions) && (
         <>

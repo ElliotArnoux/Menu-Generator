@@ -130,15 +130,15 @@ const WeekView: React.FC<WeekViewProps> = ({
               </div>
 
               {/* Rules Container */}
-              <div className="w-full md:w-1/4 flex flex-col min-h-[40px] bg-transparent" data-html2canvas-ignore>
+              <div className="w-full md:w-1/4 flex flex-col min-h-[40px] bg-transparent">
                   <div className="flex items-center gap-2 px-3 py-0.5 bg-transparent border-b border-inherit/20">
                       <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">{t('applied_rules')}</span>
                   </div>
                   <div className="flex-1 overflow-x-auto overflow-y-hidden px-4 py-1 scrollbar-hide">
-                      <div className="flex flex-wrap gap-1 h-full content-start">
+                      <div className="flex flex-wrap gap-1 h-full content-start" data-html2canvas-ignore>
                           {appliedRuleNames.length > 0 ? (
                               appliedRuleNames.map((ruleName, idx) => (
-                                  <span key={idx} className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[8px] font-bold transition-all whitespace-nowrap ${isDarkMode ? 'bg-brand-primary/10 text-brand-light' : 'bg-brand-primary/10 text-brand-secondary border border-brand-primary/20'}`}>
+                                  <span key={idx} className={`inline-flex items-center justify-center px-2 h-4 rounded text-[8px] font-bold transition-all whitespace-nowrap leading-none ${isDarkMode ? 'bg-brand-primary/10 text-brand-light' : 'bg-brand-primary/10 text-brand-secondary border border-brand-primary/20'}`}>
                                       {ruleName}
                                   </span>
                               ))

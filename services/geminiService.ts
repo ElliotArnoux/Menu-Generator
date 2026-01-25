@@ -17,10 +17,6 @@ const responseSchema = {
         type: Type.STRING,
         description: 'The concise name of the dish.',
       },
-      description: {
-        type: Type.STRING,
-        description: 'A brief, one-sentence description of the dish.',
-      },
       categories: {
         type: Type.ARRAY,
         description: "List of categories this dish belongs to (e.g., 'Meat', 'Vegetable').",
@@ -45,7 +41,7 @@ const responseSchema = {
         }
       }
     },
-    required: ['name', 'description'],
+    required: ['name'],
   },
 };
 
@@ -71,7 +67,6 @@ export const getMealSuggestions = async (
 
     IMPORTANT: The output JSON must be in ${langName}.`;
 
-    // Fix: Updated model to 'gemini-3-flash-preview' for basic text tasks
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
@@ -81,14 +76,13 @@ export const getMealSuggestions = async (
       },
     });
 
-    // Fix: Accessing .text property directly (not as a function)
     const jsonText = response.text.trim();
     const suggestions = JSON.parse(jsonText) as Dish[];
     return suggestions;
   } catch (error) {
     console.error("Error fetching meal suggestions:", error);
     return [
-        {name: 'Error', description: 'Could not fetch suggestions.', ingredients: []}
+        {name: 'Error', ingredients: []}
     ];
   }
 };
@@ -120,7 +114,6 @@ const fullWeekMenuSchema = {
                             description: "The dish for the sub-meal. The entire object for this key should be JSON `null` if the meal is empty or skipped.",
                             properties: {
                               name: { type: Type.STRING, description: "Name of the dish." },
-                              description: { type: Type.STRING, description: "A brief one-sentence description." },
                               categories: {
                                 type: Type.ARRAY,
                                 description: "List of categories this dish belongs to.",
@@ -139,7 +132,7 @@ const fullWeekMenuSchema = {
                                 }
                               }
                             },
-                            required: ['name', 'description']
+                            required: ['name']
                         }
                     },
                     required: ['name', 'dish']
@@ -182,7 +175,7 @@ export const generateFullWeekMenu = async (rules: string, weekMenu: Day[], recip
         });
 
         const myRecipesContext = recipeBook.length > 0 
-            ? `\nYOU HAVE PRIORITY to use these user's personal recipes IF they fit the rules:\n${recipeBook.map(d => `- ${d.name} (${d.description})`).join('\n')}\n`
+            ? `\nYOU HAVE PRIORITY to use these user's personal recipes IF they fit the rules:\n${recipeBook.map(d => `- ${d.name}`).join('\n')}\n`
             : '';
 
         const prompt = `
@@ -200,15 +193,14 @@ ${structureDescription}
 2. The structure of Days, Meals, and Sub-meals in your JSON MUST MATCH EXACTLY the structure described above.
 3. DO NOT add meals that are not listed.
 4. If a section is marked [SKIP], the 'dish' field MUST be null.
-5. If a section is marked [GENERATE], provide a dish object with name, description, categories, and ingredients (including estimated numeric quantity for 4 people).
+5. If a section is marked [GENERATE], provide a dish object with name, categories, and ingredients (including estimated numeric quantity for 4 people).
 
 ${catList}
 
 Output as valid JSON array strictly adhering to schema.
-EXTREMELY IMPORTANT: The content (Dish names, descriptions, ingredients) MUST BE IN ${langName}.
+EXTREMELY IMPORTANT: The content (Dish names, ingredients) MUST BE IN ${langName}.
 `;
 
-        // Fix: Updated model to 'gemini-3-pro-preview' for complex planning tasks
         const response = await ai.models.generateContent({
             model: 'gemini-3-pro-preview',
             contents: prompt,
@@ -218,7 +210,6 @@ EXTREMELY IMPORTANT: The content (Dish names, descriptions, ingredients) MUST BE
             },
         });
 
-        // Fix: Accessing .text property directly (not as a function)
         const jsonText = response.text.trim();
         const generatedMenu = JSON.parse(jsonText);
 

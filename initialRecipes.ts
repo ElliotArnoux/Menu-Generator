@@ -5,7 +5,6 @@ export const initialRecipes: Dish[] = [
     {
         id: "1",
         name: "Tortilla Española",
-        description: "Clásica tortilla de patatas y huevo, jugosa por dentro.",
         categories: ["cat_vegetable", "cat_meal", "cat_gluten_free"],
         ingredients: [
             { text: "huevos grandes", store: "Supermarket", quantity: 6 },
@@ -19,7 +18,6 @@ export const initialRecipes: Dish[] = [
     {
         id: "2",
         name: "Paella de Marisco",
-        description: "Un sabroso arroz con mariscos frescos, el plato icónico de Valencia.",
         categories: ["cat_fish", "cat_meal"],
         ingredients: [
             { text: "Arroz bomba (g)", store: "Supermarket", quantity: 400 },

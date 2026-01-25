@@ -56,7 +56,7 @@ const RecipeBookView: React.FC<RecipeBookViewProps> = ({
       try {
           const json = await readJsonFile<any>(file);
           if (Array.isArray(json)) {
-              const validDishes = json.filter((item: any) => item.name && item.description);
+              const validDishes = json.filter((item: any) => item.name);
               if (validDishes.length > 0) {
                   onImportRecipes(validDishes);
               } else {
@@ -73,8 +73,7 @@ const RecipeBookView: React.FC<RecipeBookViewProps> = ({
   };
   
   const filteredRecipes = recipes.filter(r => 
-    r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.description.toLowerCase().includes(searchTerm.toLowerCase())
+    r.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

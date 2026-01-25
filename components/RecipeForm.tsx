@@ -19,7 +19,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({
     onAddCategory, onDeleteCategory
 }) => {
     const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [ingredients, setIngredients] = useState<Ingredient[]>([{ text: '', store: '', quantity: 0 }]);
     const [instructions, setInstructions] = useState('');
@@ -31,7 +30,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({
     useEffect(() => {
         if (editingRecipe) {
             setName(editingRecipe.name);
-            setDescription(editingRecipe.description);
             const cats = editingRecipe.categories 
                 ? editingRecipe.categories 
                 : (editingRecipe.category ? [editingRecipe.category] : []);
@@ -46,7 +44,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({
         } else {
             // Reset if switching to Add mode
             setName('');
-            setDescription('');
             setSelectedCategories([]);
             setIngredients([{ text: '', store: '', quantity: 0 }]);
             setInstructions('');
@@ -91,15 +88,15 @@ const RecipeForm: React.FC<RecipeFormProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name || !description) {
-            alert('Please fill name and description.');
+        if (!name) {
+            alert('Please fill recipe name.');
             return;
         }
         const finalIngredients = ingredients.filter(ing => ing.text.trim() !== '');
         
         const recipeData = { 
             name, 
-            description, 
+            description: '', // Kept as empty string for compatibility
             categories: selectedCategories, 
             ingredients: finalIngredients, 
             instructions 
@@ -114,7 +111,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({
         // Clear form if saving new
         if (!editingRecipe) {
             setName('');
-            setDescription('');
             setSelectedCategories([]);
             setIngredients([{ text: '', store: '', quantity: 0 }]);
             setInstructions('');
@@ -185,17 +181,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({
                         ))}
                     </div>
                 </div>
-            </div>
-            <div>
-                <label htmlFor="description" className="block text-sm font-medium text-dark-text-secondary mb-1">{t('description')}</label>
-                <input
-                    type="text"
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-gray-800 border border-dark-border rounded-md px-3 py-2 text-dark-text focus:ring-brand-primary focus:border-brand-primary"
-                    required
-                />
             </div>
             <div>
                 <label className="block text-sm font-medium text-dark-text-secondary mb-1">{t('ingredients')}</label>

@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Dish, AppLanguage, SavedRule } from '../types';
 import { getMealSuggestions } from '../services/geminiService';
 import DishCard from './DishCard';
-import { XIcon, RefreshCwIcon, Wand2Icon } from './icons';
+import { XIcon, RefreshCwIcon, Wand2Icon, SearchIcon } from './icons';
 import RecipeForm from './RecipeForm';
 
 interface DishSelectorProps {
@@ -32,6 +31,7 @@ const DishSelector: React.FC<DishSelectorProps> = ({
   const [suggestions, setSuggestions] = useState<Dish[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
   
   // AI Customization
   const [customPrompt, setCustomPrompt] = useState('');
@@ -49,6 +49,7 @@ const DishSelector: React.FC<DishSelectorProps> = ({
   const fetchSuggestions = useCallback(async () => {
     if (!mealIdentifier) return;
     setIsLoading(true);
+    setHasSearched(true);
     
     let context = customPrompt;
     if (selectedRuleIds.size > 0) {
@@ -64,12 +65,6 @@ const DishSelector: React.FC<DishSelectorProps> = ({
     setIsLoading(false);
   }, [selectedCategory, mealIdentifier, language, categories, customPrompt, selectedRuleIds, savedRules]);
 
-  // Only auto-fetch on first open, not on every render
-  useEffect(() => {
-    if (isOpen && mealIdentifier && activeTab === 'ai' && suggestions.length === 0) {
-      fetchSuggestions();
-    }
-  }, [isOpen, activeTab]); 
   
   useEffect(() => {
     if (isOpen) {
@@ -77,6 +72,7 @@ const DishSelector: React.FC<DishSelectorProps> = ({
         setSearchTerm('');
         setFreeText('');
         setSuggestions([]); 
+        setHasSearched(false);
     }
   }, [isOpen, recipeBook.length]);
 
@@ -217,9 +213,9 @@ const DishSelector: React.FC<DishSelectorProps> = ({
               <div className="mt-2">
                 <div className="flex justify-between items-center mb-2">
                     <h3 className="font-semibold text-dark-text">Suggestions</h3>
-                    <button onClick={fetchSuggestions} disabled={isLoading} className="flex items-center gap-2 px-3 py-1 bg-dark-card rounded-full hover:bg-gray-700 transition-colors disabled:opacity-50 text-dark-text-secondary">
-                        <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                        <span className="text-xs">Refresh</span>
+                    <button onClick={fetchSuggestions} disabled={isLoading} className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 ${hasSearched ? 'bg-dark-card hover:bg-gray-700 text-dark-text-secondary' : 'bg-brand-primary hover:bg-brand-secondary text-white'}`}>
+                        {hasSearched ? <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> : <Wand2Icon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />}
+                        <span className="text-xs font-bold">{hasSearched ? t('refresh') : t('search_recipes')}</span>
                     </button>
                 </div>
                 {isLoading ? (
@@ -238,7 +234,7 @@ const DishSelector: React.FC<DishSelectorProps> = ({
                       />
                     )) : (
                         <div className="text-center py-8 text-dark-text-secondary">
-                            <p>Click Refresh to get AI suggestions.</p>
+                            <p>{t('click_search_ai')}</p>
                         </div>
                     )}
                   </div>
@@ -249,13 +245,16 @@ const DishSelector: React.FC<DishSelectorProps> = ({
           
           {activeTab === 'myRecipes' && (
              <div className="p-4">
-                <input
-                    type="text"
-                    placeholder={t('search_placeholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-dark-card border border-dark-border rounded-md px-3 py-2 mb-4 text-dark-text focus:ring-brand-primary focus:border-brand-primary"
-                />
+                <div className="relative mb-4">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-dark-text-secondary" />
+                    <input
+                        type="text"
+                        placeholder={t('search_placeholder')}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-dark-card border border-dark-border rounded-md pl-10 pr-3 py-2 text-dark-text focus:ring-brand-primary focus:border-brand-primary"
+                    />
+                </div>
                 {filteredRecipes.length > 0 ? (
                     <div className="space-y-3">
                         {filteredRecipes.map((dish) => (

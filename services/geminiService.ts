@@ -111,12 +111,12 @@ export const getMealSuggestions = async (
     
     const catList = availableCategories.length > 0 ? `Use these categories if they apply: ${availableCategories.join(', ')}.` : '';
 
-    const prompt = `Suggest 5 simple and family-friendly dish ideas for ${mealName} that fit the category "${category}". 
+    const prompt = `Suggest 3 simple and family-friendly dish ideas for ${mealName} that STRICTLY fit the category "${category}". 
     Prioritize Iberian style cuisine (Spanish/Portuguese). 
     Include a list of ingredients for each dish with estimated numeric quantities for 4 people.
     Assign appropriate categories to each dish. ${catList}
     
-    ADDITIONAL USER INSTRUCTIONS (Priority): ${customContext}
+    ADDITIONAL USER INSTRUCTIONS (Priority - Must be followed): ${customContext}
 
     IMPORTANT: The output JSON must be in ${langName}.`;
 

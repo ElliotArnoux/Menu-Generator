@@ -99,6 +99,9 @@ export const TRANSLATIONS: Record<string, Record<AppLanguage, string>> = {
     'ai_custom_prompt': { es: 'Instrucción personalizada (opcional)', en: 'Custom prompt (optional)', fr: 'Instruction personnalisée (optionnel)' },
     'ai_custom_placeholder': { es: 'Ej: Algo con pollo...', en: 'Ex: Something with chicken...', fr: 'Ex: Quelque chose avec du poulet...' },
     'select_rules_optional': { es: 'Aplicar reglas (opcional)', en: 'Apply rules (optional)', fr: 'Appliquer des reglas (optionnel)' },
+    'search_recipes': { es: 'Buscar Recetas', en: 'Search Recipes', fr: 'Chercher Recettes' },
+    'refresh': { es: 'Refrescar', en: 'Refresh', fr: 'Actualiser' },
+    'click_search_ai': { es: 'Pulsa "Buscar Recetas" para obtener sugerencias.', en: 'Click "Search Recipes" to get AI suggestions.', fr: 'Cliquez sur "Chercher Recettes" pour obtenir des suggestions.' },
 
     // Default Categories (Legacy & New Keys)
     'Meat': { es: 'Carne', en: 'Meat', fr: 'Viande' },

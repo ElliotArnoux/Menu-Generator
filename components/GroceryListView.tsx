@@ -9,6 +9,7 @@ interface GroceryItem {
     text: string;
     store: string;
     count: number;
+    days: string[];
 }
 
 interface GroceryListViewProps {
@@ -40,7 +41,8 @@ const GroceryListView: React.FC<GroceryListViewProps> = ({
         id: `${item.text}::${item.store}`,
         text: item.text,
         store: item.store,
-        count: item.count
+        count: item.count,
+        days: item.days
     })).sort((a, b) => {
         if (a.store === b.store) {
             return a.text.localeCompare(b.text);

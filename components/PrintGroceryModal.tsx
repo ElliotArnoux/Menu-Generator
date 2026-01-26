@@ -34,13 +34,13 @@ const PrintGroceryModal: React.FC<PrintGroceryModalProps> = ({
     });
 
     // Grouping for Display
-    const groups: Record<string, {text: string, count: number}[]> = {};
+    const groups: Record<string, {text: string, count: number, days: string[]}[]> = {};
     filtered.forEach(item => {
         if (!groups[item.store]) groups[item.store] = [];
         groups[item.store].push(item);
     });
     
-    const result: { store: string, items: {text: string, count: number}[] }[] = [];
+    const result: { store: string, items: {text: string, count: number, days: string[]}[] }[] = [];
     
     // Sort keys, ignoring uncategorized for now
     const sortedKeys = Object.keys(groups).filter(k => k !== 'Uncategorized').sort((a, b) => a.localeCompare(b));
@@ -218,8 +218,17 @@ const PrintGroceryModal: React.FC<PrintGroceryModalProps> = ({
                                         {group.items.map((item, idx) => (
                                             <li key={idx} className="flex gap-1.5 items-start">
                                                 <span className="text-gray-400 mt-0.5">•</span>
-                                                <span className="flex-grow font-medium leading-tight">{item.text}</span>
-                                                {item.count > 1 && <span className="font-bold text-gray-800 bg-gray-200 px-1 rounded text-[8px] flex-shrink-0">x{item.count}</span>}
+                                                <div className="flex-grow flex flex-col leading-tight">
+                                                    <div className="flex gap-1">
+                                                        <span className="font-medium">{item.text}</span>
+                                                        {item.count > 1 && <span className="font-bold text-gray-800 bg-gray-200 px-1 rounded text-[8px] flex-shrink-0">x{item.count}</span>}
+                                                    </div>
+                                                    {item.days && item.days.length > 0 && (
+                                                        <span className="text-[8px] text-gray-500 italic">
+                                                            {item.days.join(', ')}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </li>
                                         ))}
                                     </ul>

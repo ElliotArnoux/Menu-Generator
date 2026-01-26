@@ -8,15 +8,14 @@ if (!process.env.API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const responseSchema = {
+// -- Schema Definitions --
+
+const dishSuggestionSchema = {
   type: Type.ARRAY,
   items: {
     type: Type.OBJECT,
     properties: {
-      name: {
-        type: Type.STRING,
-        description: 'The concise name of the dish.',
-      },
+      name: { type: Type.STRING, description: 'The concise name of the dish.' },
       categories: {
         type: Type.ARRAY,
         description: "List of categories this dish belongs to (e.g., 'Meat', 'Vegetable').",
@@ -28,14 +27,8 @@ const responseSchema = {
         items: {
             type: Type.OBJECT,
             properties: {
-                text: { 
-                    type: Type.STRING,
-                    description: 'A single ingredient name (include unit if necessary, e.g. "Flour (grams)").'
-                },
-                quantity: {
-                    type: Type.NUMBER,
-                    description: 'The numeric quantity needed for a family of 4.'
-                }
+                text: { type: Type.STRING, description: 'A single ingredient name (include unit if necessary).' },
+                quantity: { type: Type.NUMBER, description: 'The numeric quantity needed for a family of 4.' }
             },
             required: ['text']
         }
@@ -45,6 +38,66 @@ const responseSchema = {
   },
 };
 
+const fullWeekMenuSchema = {
+    type: Type.ARRAY,
+    description: "An array of 7 day objects, from Monday to Sunday.",
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        name: { type: Type.STRING, description: "Day of the week (e.g., 'Monday')." },
+        meals: {
+          type: Type.ARRAY,
+          description: "An array of meal objects: Breakfast, Lunch, and Dinner.",
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING, description: "Meal name (e.g., 'Breakfast')." },
+              subMeals: {
+                type: Type.ARRAY,
+                description: "An array of sub-meal objects for this meal.",
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING, description: "Sub-meal name (e.g., 'Primer Plato')." },
+                        dish: {
+                            type: Type.OBJECT,
+                            nullable: true,
+                            description: "The dish for the sub-meal. Null if skipped.",
+                            properties: {
+                              name: { type: Type.STRING, description: "Name of the dish." },
+                              categories: { type: Type.ARRAY, items: { type: Type.STRING } },
+                              ingredients: {
+                                type: Type.ARRAY,
+                                items: {
+                                  type: Type.OBJECT,
+                                  properties: {
+                                    text: { type: Type.STRING },
+                                    quantity: { type: Type.NUMBER }
+                                  },
+                                  required: ['text']
+                                }
+                              }
+                            },
+                            required: ['name']
+                        }
+                    },
+                    required: ['name', 'dish']
+                }
+              }
+            },
+            required: ['name', 'subMeals']
+          }
+        }
+      },
+      required: ['name', 'meals']
+    }
+  };
+
+// -- API Methods --
+
+/**
+ * Fetches dish suggestions for a specific slot based on category and rules.
+ */
 export const getMealSuggestions = async (
     category: string, 
     mealName: string, 
@@ -72,90 +125,36 @@ export const getMealSuggestions = async (
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
-        responseSchema: responseSchema,
+        responseSchema: dishSuggestionSchema,
       },
     });
 
     const jsonText = response.text.trim();
-    const suggestions = JSON.parse(jsonText) as Dish[];
-    return suggestions;
+    return JSON.parse(jsonText) as Dish[];
   } catch (error) {
     console.error("Error fetching meal suggestions:", error);
-    return [
-        {name: 'Error', ingredients: []}
-    ];
+    return [{ name: 'Error', ingredients: [] }];
   }
 };
 
-const fullWeekMenuSchema = {
-    type: Type.ARRAY,
-    description: "An array of 7 day objects, from Monday to Sunday.",
-    items: {
-      type: Type.OBJECT,
-      properties: {
-        name: { type: Type.STRING, description: "Day of the week (e.g., 'Monday')." },
-        meals: {
-          type: Type.ARRAY,
-          description: "An array of meal objects: Breakfast, Lunch, and Dinner.",
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              name: { type: Type.STRING, description: "Meal name (e.g., 'Breakfast')." },
-              subMeals: {
-                type: Type.ARRAY,
-                description: "An array of sub-meal objects for this meal.",
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        name: { type: Type.STRING, description: "Sub-meal name (e.g., 'Primer Plato')." },
-                        dish: {
-                            type: Type.OBJECT,
-                            nullable: true,
-                            description: "The dish for the sub-meal. The entire object for this key should be JSON `null` if the meal is empty or skipped.",
-                            properties: {
-                              name: { type: Type.STRING, description: "Name of the dish." },
-                              categories: {
-                                type: Type.ARRAY,
-                                description: "List of categories this dish belongs to.",
-                                items: { type: Type.STRING }
-                              },
-                              ingredients: {
-                                type: Type.ARRAY,
-                                description: "List of ingredients.",
-                                items: {
-                                  type: Type.OBJECT,
-                                  properties: {
-                                    text: { type: Type.STRING, description: "A single ingredient name." },
-                                    quantity: { type: Type.NUMBER, description: "Numeric quantity for 4 people." }
-                                  },
-                                  required: ['text']
-                                }
-                              }
-                            },
-                            required: ['name']
-                        }
-                    },
-                    required: ['name', 'dish']
-                }
-              }
-            },
-            required: ['name', 'subMeals']
-          }
-        }
-      },
-      required: ['name', 'meals']
-    }
-  };
-
-
-export const generateFullWeekMenu = async (rules: string, weekMenu: Day[], recipeBook: Dish[], language: AppLanguage, availableCategories: string[] = []): Promise<Day[]> => {
+/**
+ * Generates a full week menu based on rules and user recipes.
+ * Fills only empty slots in the provided schedule.
+ */
+export const generateFullWeekMenu = async (
+    rules: string, 
+    weekMenu: Day[], 
+    recipeBook: Dish[], 
+    language: AppLanguage, 
+    availableCategories: string[] = []
+): Promise<Day[]> => {
     try {
         const langNames = { es: 'Spanish', en: 'English', fr: 'French' };
         const langName = langNames[language];
         
         const catList = availableCategories.length > 0 ? `Use these categories if they apply: ${availableCategories.join(', ')}.` : '';
 
-        // Build a strict structure description
+        // Build a strict structure description to guide the model
         let structureDescription = '';
         weekMenu.forEach(day => {
             structureDescription += `Day: ${day.name}\n`;
@@ -193,7 +192,7 @@ ${structureDescription}
 2. The structure of Days, Meals, and Sub-meals in your JSON MUST MATCH EXACTLY the structure described above.
 3. DO NOT add meals that are not listed.
 4. If a section is marked [SKIP], the 'dish' field MUST be null.
-5. If a section is marked [GENERATE], provide a dish object with name, categories, and ingredients (including estimated numeric quantity for 4 people).
+5. If a section is marked [GENERATE], provide a dish object with name, categories, and ingredients.
 
 ${catList}
 

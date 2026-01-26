@@ -3,7 +3,7 @@ import React from 'react';
 import { AppLanguage } from '../types';
 import { 
   GlobeIcon, CalendarIcon, UtensilsIcon, ClipboardListIcon, 
-  ShoppingCartIcon, Wand2Icon, PrinterIcon, SaveFloppyIcon, SunIcon, MoonIcon, FolderIcon, CameraIcon
+  ShoppingCartIcon, Wand2Icon, SaveFloppyIcon, SunIcon, MoonIcon, FolderIcon, CameraIcon
 } from './icons';
 
 interface HeaderProps {
@@ -11,11 +11,12 @@ interface HeaderProps {
   language: AppLanguage;
   toggleLanguage: () => void;
   activeWeekId: string | null;
+  activeWeekName: string;
+  isDirty: boolean;
   handleQuickSave: () => void;
   setIsSavedWeeksModalOpen: (isOpen: boolean) => void;
   setIsGroceryListOpen: (isOpen: boolean) => void;
   setIsGenerateModalOpen: (isOpen: boolean) => void;
-  handlePrintClick: (mode: 'week' | 'grocery') => void;
   handleScreenshot: () => void;
   currentView: 'planner' | 'recipes' | 'rules';
   setCurrentView: (view: 'planner' | 'recipes' | 'rules') => void;
@@ -24,8 +25,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({
-  t, language, toggleLanguage, activeWeekId, handleQuickSave, 
-  setIsSavedWeeksModalOpen, setIsGroceryListOpen, setIsGenerateModalOpen, handlePrintClick,
+  t, language, toggleLanguage, activeWeekId, activeWeekName, isDirty, handleQuickSave, 
+  setIsSavedWeeksModalOpen, setIsGroceryListOpen, setIsGenerateModalOpen,
   handleScreenshot, currentView, setCurrentView, isDarkMode, toggleTheme
 }) => {
   
@@ -36,18 +37,22 @@ const Header: React.FC<HeaderProps> = ({
   }> = ({ isActive, onClick, icon }) => (
     <button
         onClick={onClick}
-        className={`flex items-center justify-center p-3 rounded-full transition-all duration-200 font-semibold ${
-        isActive ? 'bg-brand-primary text-white scale-110 shadow-lg' : (isDarkMode ? 'bg-dark-card text-dark-text-secondary hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+        className={`flex items-center justify-center p-3 rounded-full transition-all duration-200 font-semibold border ${
+        isActive 
+            ? 'bg-brand-primary text-white border-brand-primary scale-110 shadow-lg' 
+            : (isDarkMode ? 'bg-dark-card text-dark-text-secondary border-transparent hover:bg-gray-700' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100')
         }`}
     >
         {icon}
     </button>
   );
 
+  const actionButtonClass = `p-3 rounded-full transition-colors border ${isDarkMode ? 'bg-dark-card text-dark-text-secondary border-transparent hover:bg-gray-700' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'}`;
+
   return (
     <header className={`sticky top-0 backdrop-blur-sm z-20 px-4 py-4 border-b ${isDarkMode ? 'bg-dark-bg/90 border-dark-border' : 'bg-white/90 border-gray-200'}`}>
-      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-center md:text-left">
+      <div className="container mx-auto flex flex-col xl:flex-row items-center justify-between gap-4">
+          <div className="text-center md:text-left mb-2 xl:mb-0">
             <h1 className={`text-2xl md:text-3xl font-extrabold ${isDarkMode ? 'text-dark-text' : 'text-gray-900'}`}>
                 {t('app_title')}
             </h1>
@@ -56,86 +61,105 @@ const Header: React.FC<HeaderProps> = ({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+             
+             {/* 1. Name of the loaded menu */}
+             <div className={`flex items-center gap-2 px-3 py-2 rounded-md border text-sm font-semibold transition-colors ${
+                 isDirty 
+                    ? (isDarkMode ? 'bg-amber-900/20 border-amber-500/50 text-amber-500' : 'bg-amber-50 border-amber-400 text-amber-700')
+                    : (isDarkMode ? 'bg-dark-card border-dark-border text-dark-text-secondary' : 'bg-gray-50 border-gray-200 text-gray-600')
+             }`}>
+                <FolderIcon className={`h-4 w-4 ${isDirty ? 'animate-pulse' : ''}`} />
+                <span className="max-w-[150px] md:max-w-[300px] truncate" title={activeWeekName}>{activeWeekName}</span>
+                {isDirty && <span className="text-lg leading-none" title="Unsaved changes">*</span>}
+             </div>
+
+             {/* 2. Floppy disk save */}
+             <button
+                onClick={handleQuickSave}
+                className={`p-3 rounded-full transition-all relative border ${isDarkMode ? 'bg-dark-card text-brand-light border-brand-primary/30 hover:bg-gray-700' : 'bg-white text-brand-secondary border-brand-primary/30 hover:bg-brand-50'}`}
+                title={t('save')}
+             >
+                <SaveFloppyIcon className="h-5 w-5" />
+                {isDirty && <div className="absolute top-2 right-2 w-2.5 h-2.5 bg-amber-500 rounded-full border border-white"></div>}
+             </button>
+
+             {/* 3. Folder icon to manage the week menus */}
+             <button
+                onClick={() => setIsSavedWeeksModalOpen(true)}
+                className={actionButtonClass}
+                title={t('manage_weeks')}
+             >
+                <FolderIcon className="h-5 w-5" />
+             </button>
+
+             {/* 4. Meal planner calendar icon */}
+             <NavButton
+                isActive={currentView === 'planner'}
+                onClick={() => setCurrentView('planner')}
+                icon={<CalendarIcon className="h-5 w-5" />}
+             />
+
+             {/* 5. AI generating menu icon */}
+             <button
+                onClick={() => setIsGenerateModalOpen(true)}
+                className="flex items-center justify-center p-3 rounded-full transition-all duration-200 font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg hover:scale-105 border border-transparent"
+                title={t('generate_week')}
+             >
+                <Wand2Icon className="h-5 w-5" />
+             </button>
+
+             {/* 6. Recipe icon */}
+             <NavButton
+                isActive={currentView === 'recipes'}
+                onClick={() => setCurrentView('recipes')}
+                icon={<UtensilsIcon className="h-5 w-5" />}
+             />
+
+             {/* 7. Rules icon */}
+             <NavButton
+                isActive={currentView === 'rules'}
+                onClick={() => setCurrentView('rules')}
+                icon={<ClipboardListIcon className="h-5 w-5" />}
+             />
+
+             {/* 8. Grocery list */}
+             <button
+                onClick={() => setIsGroceryListOpen(true)}
+                className={actionButtonClass}
+                title={t('grocery_list')}
+             >
+                <ShoppingCartIcon className="h-5 w-5" />
+             </button>
+
+             {/* 9. Language */}
              <button 
                 onClick={toggleLanguage}
-                className={`flex items-center gap-1 rounded-md border px-3 py-2 text-sm font-bold transition-colors ${isDarkMode ? 'bg-dark-card border-dark-border text-dark-text hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-900 hover:bg-gray-100'}`}
+                className={`flex items-center gap-1 rounded-md border px-3 py-2 text-sm font-bold transition-colors ${isDarkMode ? 'bg-dark-card border-transparent text-dark-text hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-100'}`}
                 title="Cambiar idioma"
              >
                 <GlobeIcon className="h-4 w-4" />
                 <span>{language.toUpperCase()}</span>
              </button>
 
-             <nav className={`flex justify-center gap-2 p-1 rounded-full ${isDarkMode ? 'bg-dark-card/50' : 'bg-gray-100'}`}>
-                <NavButton
-                    isActive={currentView === 'planner'}
-                    onClick={() => setCurrentView('planner')}
-                    icon={<CalendarIcon className="h-5 w-5" />}
-                />
-                <NavButton
-                    isActive={currentView === 'recipes'}
-                    onClick={() => setCurrentView('recipes')}
-                    icon={<UtensilsIcon className="h-5 w-5" />}
-                />
-                <NavButton
-                    isActive={currentView === 'rules'}
-                    onClick={() => setCurrentView('rules')}
-                    icon={<ClipboardListIcon className="h-5 w-5" />}
-                />
-             </nav>
+             {/* 10. Dark light mode */}
+             <button
+                onClick={toggleTheme}
+                className={`p-3 rounded-full transition-colors border ${isDarkMode ? 'bg-dark-card text-yellow-400 border-transparent hover:bg-gray-700' : 'bg-white text-indigo-600 border-gray-200 hover:bg-gray-100'}`}
+                title="Tema"
+             >
+                {isDarkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+             </button>
 
-             <div className="flex flex-wrap justify-center gap-2">
-                <button
-                    onClick={toggleTheme}
-                    className={`p-3 rounded-full transition-colors ${isDarkMode ? 'bg-dark-card text-yellow-400 hover:bg-gray-700' : 'bg-white text-indigo-600 border border-gray-200 hover:bg-gray-100'}`}
-                    title="Tema"
-                >
-                    {isDarkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-                </button>
-                <button
-                    onClick={handleQuickSave}
-                    className={`p-3 rounded-full transition-all relative ${isDarkMode ? 'bg-dark-card text-brand-light border border-brand-primary/30 hover:bg-gray-700' : 'bg-white text-brand-secondary border border-brand-primary/30 hover:bg-brand-50'}`}
-                    title={t('save')}
-                >
-                    <SaveFloppyIcon className="h-5 w-5" />
-                    {activeWeekId && <div className="absolute top-2 right-2 w-2 h-2 bg-brand-primary rounded-full border border-white"></div>}
-                </button>
-                <button
-                    onClick={() => setIsSavedWeeksModalOpen(true)}
-                    className={`p-3 rounded-full transition-colors ${isDarkMode ? 'bg-dark-card text-dark-text-secondary hover:bg-gray-700' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
-                    title={t('manage_weeks')}
-                >
-                    <FolderIcon className="h-5 w-5" />
-                </button>
-                <button
-                    onClick={() => setIsGroceryListOpen(true)}
-                    className={`p-3 rounded-full transition-colors ${isDarkMode ? 'bg-dark-card text-dark-text-secondary hover:bg-gray-700' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
-                    title={t('grocery_list')}
-                >
-                    <ShoppingCartIcon className="h-5 w-5" />
-                </button>
-                <button
-                    onClick={() => setIsGenerateModalOpen(true)}
-                    className="flex items-center justify-center p-3 rounded-full transition-all duration-200 font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg hover:scale-105"
-                    title={t('generate_week')}
-                >
-                    <Wand2Icon className="h-5 w-5" />
-                </button>
-                <button
-                    onClick={handleScreenshot}
-                    className={`p-3 rounded-full transition-colors ${isDarkMode ? 'bg-dark-card text-dark-text-secondary hover:bg-gray-700' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
-                    title="Tomar captura"
-                >
-                    <CameraIcon className="h-5 w-5" />
-                </button>
-                <button
-                    onClick={() => handlePrintClick('week')}
-                    className={`p-3 rounded-full transition-colors ${isDarkMode ? 'bg-dark-card text-dark-text-secondary hover:bg-gray-700' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
-                    title={t('print')}
-                >
-                    <PrinterIcon className="h-5 w-5" />
-                </button>
-             </div>
+             {/* 11. Screenshot */}
+             <button
+                onClick={handleScreenshot}
+                className={actionButtonClass}
+                title="Tomar captura"
+             >
+                <CameraIcon className="h-5 w-5" />
+             </button>
+
           </div>
       </div>
     </header>
